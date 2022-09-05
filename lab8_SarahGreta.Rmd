@@ -1,0 +1,478 @@
+# Template for lab 8 report for BIOS 20152
+
+Sarah Greta
+
+In this lab you will use graphical analysis of ODEs to find fixed points and their stability. This requires plotting the defining function of the ODE, as shown in the following example script. The last line plots a horizontal line y=0 to help located the fixed points.
+
+```{r}
+# Define the function:
+DefFunk <- function (x,a,b){
+  ans <- a*x^2-b
+  return(ans)
+}  
+a <- 1
+b <- 4
+x<-seq(-5,5,0.1) # define the array of values of x
+y<-DefFunk(x,a,b) # calculate the values of y using a function
+plot(x,y,t="l",xlab="x", ylab="dx/dt") # plot the function
+abline(0,0) # draw a line for y=0
+```
+
+Notice that I used two input variables into the defining function (a and b) as parameters that can be changed *outside* the function. This is a good coding practice - the best way to use a function is by changing its inputs, not monkeying with its code.
+
+After qualitative analysis, you will check whether solutions behave in the predicted way by running Forward Euler to calculate the numerical solution. You can use the code from lab 7 to compute the numerical solution, simply change the function name inside the for loop. 
+
+Grading:
+
+* 3 pts each for tasks 1.1 and 1.2, 5 pts each for tasks 1.3, 1.4, and 1.5
+* 3 pts each for tasks 2.1 and 2.2, 5 pts each for tasks 2.2, 2.4, and 2.5 
+* Total: 42 pts
+
+## Part 1: Logistic population model
+
+This is the logistic model of population growth, with P representing population size, r is the growth rate parameter, and K is the carrying capacity parameter; P is measured in thousands, and time is measured in years.
+$$ \frac{dP}{dt} = rP(1-P/K) $$
+
+1. For the values of r=0.3 and K=40, plot the graph of the defining function (right-hand side of the ODE) in R over some interval that includes all zeros of the function. Based on the graph, find the equilibria of the ODE, determine their stability, and predict the behavior of the solution for the following initial values: P(0) = 1; P(0) = 39; P(0) = 20.
+
+```{r}
+pop.fun <- function(r,x,k){
+  ans <- r*x*(1-x/k)
+  return(ans)
+}
+r <- 0.3
+K <- 40
+x <- seq(-5, 50, 0.5) 
+y <- pop.fun(r,x,K)
+plot(x,y,t="l",xlab="P", ylab="dP/dt")
+abline(0,0)
+```
+
+There are two equilibria, when x is 0 and when x is 40. Since the curve to the left of 0 is negative and the slope of the curve to the right of 0 is positive, the graph will always move away from 0 so this equilibrium is unstable. The curve to the left of 40 is positive and to the right of 40 is negative, so the graph will always increase or decrease to 40. When the initial value is 1, the graph will increase to the stable equilibrium 40, which acts as an asymptote. When P(0)=39, the graph will increase to 40 and stay there, similar to when P(0)=1. When P(0)=20, the graph will increase to 40 and stay there, just as it does when P(0)=1 or 39.
+  
+2. For the values of the parameters $r=0.02$ and $K=120$, plot the graph of the defining function (right-hand side of the ODE) in R over some interval that includes all zeros of the function. Based on the graph, find the equilibria of the ODE, determine their stability, and predict the behavior of the solution for the following initial values: P(0) = 10; P(0) = 50; P(0) = 150.
+
+```{r}
+r <- 0.02
+K <- 120
+x <- seq(-5, 140, 0.5) 
+y <- pop.fun(r,x,K)
+plot(x,y,t="l",xlab="P", ylab="dP/dt")
+abline(0,0)
+```
+
+The graph has two equilibria, one when x is 0 and another when x is 120. Since the curve to the left of 0 is negative and to the right is positive, the graph will always move away from 0 so this is an unstable equilibrium. Conversely, the graph to the left of 120 is positive and to the right of 120 is negative so the graph will always increase or decrease to 120, making it a stable equilibrium. When P(0)=10, the graph will increase to 120, which acts as a vertical asymptote. When P(0)=50, the graph will again increase to 120 and then stay there. When P(0)=150, the graph will decrease to 120 and stay there as 120 is an asymptote.
+
+  
+3. Write a script that uses the Forward Euler method to solve the logistic ODE for any given values of $r$ and $K$. Use this script to solve the logistic ODE with parameters r=0.3 and K=40, with a small time step (e.g. $dt =0.1$) and the following initial values: P(0) = 1; P(0) = 39; P(0) = 20. Plot the numerical solutions of the ODE over a sufficiently large time *Tmax* to observe convergence. Do the solution plots look consistent with your prediction in task 1?
+
+```{r}
+r <- 0.3
+K <- 40
+dt <- 0.1
+Tmax <- 100
+Nstep <- Tmax/dt
+t <- dt*(0:Nstep)
+x <- rep(0, Nstep+1)
+x[1] <- 1
+for (i in 1:Nstep){
+  x[i+1] <- x[i] + dt*pop.fun(r,x[i],K)
+}
+plot(t,x, type="l", ylab="population", xlab="time")
+
+x <- rep(0, Nstep+1)
+x[1] <- 39
+for (i in 1:Nstep){
+  x[i+1] <- x[i] + dt*pop.fun(r,x[i],K)
+}
+plot(t,x, type="l", ylab="population", xlab="time")
+
+x <- rep(0, Nstep+1)
+x[1] <- 20
+for (i in 1:Nstep){
+  x[i+1] <- x[i] + dt*pop.fun(r,x[i],K)
+}
+plot(t,x, type="l", ylab="population", xlab="time")
+```
+
+The solution plots are consistent with my predictions in task 1. All the plots increase converge to 40 and stay there as 40 is an asymptote and stable equilibrium.
+
+  
+4. Use the Forward Euler method to solve the logistic ODE with parameters r=0.02 and K=120, with a small time step (e.g. dt =0.1) and the following initial values: P(0) = 10; P(0) = 50; P(0) = 150. Plot the numerical solutions of the ODE over a sufficiently large time *Tmax* to observe convergence. Do the solution plots look consistent with your prediction in task 2?
+
+```{r}
+r <- 0.02
+K <- 120
+dt <- 0.1
+Tmax <- 400
+Nstep <- Tmax/dt
+t <- dt*(0:Nstep)
+x <- rep(0, Nstep+1)
+x[1] <- 10
+for (i in 1:Nstep){
+  x[i+1] <- x[i] + dt*pop.fun(r,x[i],K)
+}
+plot(t,x, type="l", ylab="population", xlab="time")
+
+x <- rep(0, Nstep+1)
+x[1] <- 50
+for (i in 1:Nstep){
+  x[i+1] <- x[i] + dt*pop.fun(r,x[i],K)
+}
+plot(t,x, type="l", ylab="population", xlab="time")
+
+x <- rep(0, Nstep+1)
+x[1] <- 150
+for (i in 1:Nstep){
+  x[i+1] <- x[i] + dt*pop.fun(r,x[i],K)
+}
+plot(t,x, type="l", ylab="population", xlab="time")
+```
+
+The solution plots are consistent with my predictions in task 2. All of the plots converge to 120, the stable equilibrium
+
+  
+5. Let r=0.3 and K=40 and start at P(0)=1. Gradually increase dt until you see the solution behaving differently than expected. Report at what value of dt this strange behavior begins, investigate what happens for even larger time steps, and describe what happens to the solutions.
+ 
+```{r}
+r <- 0.3
+K <- 40
+dt <- 0.5
+Tmax <- 100
+Nstep <- Tmax/dt
+t <- dt*(0:Nstep)
+x <- rep(0, Nstep+1)
+x[1] <- 1
+for (i in 1:Nstep){
+  x[i+1] <- x[i] + dt*pop.fun(r,x[i],K)
+}
+plot(t,x, type="l", ylab="population", xlab="time")
+
+dt <- 1
+Tmax <- 100
+Nstep <- Tmax/dt
+t <- dt*(0:Nstep)
+x <- rep(0, Nstep+1)
+x[1] <- 1
+for (i in 1:Nstep){
+  x[i+1] <- x[i] + dt*pop.fun(r,x[i],K)
+}
+plot(t,x, type="l", ylab="population", xlab="time")
+
+dt <- 2
+Tmax <- 100
+Nstep <- Tmax/dt
+t <- dt*(0:Nstep)
+x <- rep(0, Nstep+1)
+x[1] <- 1
+for (i in 1:Nstep){
+  x[i+1] <- x[i] + dt*pop.fun(r,x[i],K)
+}
+plot(t,x, type="l", ylab="population", xlab="time")
+
+dt <- 3
+Tmax <- 100
+Nstep <- Tmax/dt
+t <- dt*(0:Nstep)
+x <- rep(0, Nstep+1)
+x[1] <- 1
+for (i in 1:Nstep){
+  x[i+1] <- x[i] + dt*pop.fun(r,x[i],K)
+}
+plot(t,x, type="l", ylab="population", xlab="time")
+
+dt <- 4
+Tmax <- 100
+Nstep <- Tmax/dt
+t <- dt*(0:Nstep)
+x <- rep(0, Nstep+1)
+x[1] <- 1
+for (i in 1:Nstep){
+  x[i+1] <- x[i] + dt*pop.fun(r,x[i],K)
+}
+plot(t,x, type="l", ylab="population", xlab="time")
+
+dt <- 5
+Tmax <- 100
+Nstep <- Tmax/dt
+t <- dt*(0:Nstep)
+x <- rep(0, Nstep+1)
+x[1] <- 1
+for (i in 1:Nstep){
+  x[i+1] <- x[i] + dt*pop.fun(r,x[i],K)
+}
+plot(t,x, type="l", ylab="population", xlab="time")
+
+dt <- 6
+Tmax <- 100
+Nstep <- Tmax/dt
+t <- dt*(0:Nstep)
+x <- rep(0, Nstep+1)
+x[1] <- 1
+for (i in 1:Nstep){
+  x[i+1] <- x[i] + dt*pop.fun(r,x[i],K)
+}
+plot(t,x, type="l", ylab="population", xlab="time")
+
+dt <- 7
+Tmax <- 100
+Nstep <- Tmax/dt
+t <- dt*(0:Nstep)
+x <- rep(0, Nstep+1)
+x[1] <- 1
+for (i in 1:Nstep){
+  x[i+1] <- x[i] + dt*pop.fun(r,x[i],K)
+}
+plot(t,x, type="l", ylab="population", xlab="time")
+
+dt <- 8
+Tmax <- 100
+Nstep <- Tmax/dt
+t <- dt*(0:Nstep)
+x <- rep(0, Nstep+1)
+x[1] <- 1
+for (i in 1:Nstep){
+  x[i+1] <- x[i] + dt*pop.fun(r,x[i],K)
+}
+plot(t,x, type="l", ylab="population", xlab="time")
+
+dt <- 9
+Tmax <- 100
+Nstep <- Tmax/dt
+t <- dt*(0:Nstep)
+x <- rep(0, Nstep+1)
+x[1] <- 1
+for (i in 1:Nstep){
+  x[i+1] <- x[i] + dt*pop.fun(r,x[i],K)
+}
+plot(t,x, type="l", ylab="population", xlab="time")
+
+dt <- 10
+Tmax <- 100
+Nstep <- Tmax/dt
+t <- dt*(0:Nstep)
+x <- rep(0, Nstep+1)
+x[1] <- 1
+for (i in 1:Nstep){
+  x[i+1] <- x[i] + dt*pop.fun(r,x[i],K)
+}
+plot(t,x, type="l", ylab="population", xlab="time")
+
+dt <- 11
+Tmax <- 100
+Nstep <- Tmax/dt
+t <- dt*(0:Nstep)
+x <- rep(0, Nstep+1)
+x[1] <- 1
+for (i in 1:Nstep){
+  x[i+1] <- x[i] + dt*pop.fun(r,x[i],K)
+}
+plot(t,x, type="l", ylab="population", xlab="time")
+
+```
+
+The graph looks significantly different when dt is 6. The graph increases to 40 but then oscillates around it for a while until converges. When dt is 7, the graph oscillates sharply around 40 after 20 years. When dt is 8, the graph varies more drastically around 40. When dt is 9 the graph increases past 40, then decreaes and increases linearlly and does not converge. When dt is 10, the graph increases and then sharply decreases and increases and does not converge. When dt is 11, the graph is similar to that when dt is 10, but the graph decreases to -20 after 100 years.
+
+
+## Part 2: SI epidemic model
+
+The following ODE is a simple model of an infectious epidemic with only two kinds of individuals: susceptible and infected, and where the total population size stays the same.  The variable I is the fraction of individuals in the population who are infected, and the parameters $\beta$ and $\gamma$ are the infection and recovery rates, respectively; time is measured in days.
+$$ \frac{dI}{dt} = \beta I(1-I) - \gamma I $$
+
+1. For the values of $\beta = 0.1$ and $\gamma=0.03$ plot the graph of the defining function (right-hand side of the ODE) in R over the interval [0,1]. Based on the graph, find the equilibria of the ODE, determine their stability, and predict the behavior of the solution for the following initial values: I(0) = 0.01; I(0) = 0.8; I(0) = 0.5.
+
+```{r}
+epid.fun <- function(x,b,g){
+  ans <- b*x*(1-x) - g*x
+  return(ans)
+}
+b <- 0.1
+g <- 0.03
+x <- seq(0,1,0.01)
+y <- epid.fun(x,b,g)
+plot(x,y, type="l", ylab="dI/dt", xlab="I")
+abline(0,0)
+```
+
+There are two equilibria on the graph, one at 0 and one at 0.7. The curve to the right of 0 is positive, so I will move away from 0 so 0 is an unstable equilibrium. The curve to the left of 0.7 is positive and to the right of 0.7 is negative so the graph I will increase to 0.7 or decrease to 0.7, so 0.7 is a stable equilibrium. When the initial value is 0.01, the graph will increase to 0.7 and stay there are it is an asymptote. When the initial value is 0.8, the graph will decrease to 0.7 and stay there. When the initial value is 0.5, the graph will increase to 0.7 and stay there.
+
+  
+2. For the values of $\beta = 0.1$ and $\gamma=0.5$ plot the graph of the defining function (right-hand side of the ODE) in R over the interval [0,1]. Based on the graph, find the equilibria of the ODE, determine their stability, and predict the behavior of the solution for the following initial values: I(0) = 0.01; I(0) = 0.8; I(0) = 0.5.
+
+```{r}
+b <- 0.1
+g <- 0.5
+x <- seq(0,1,0.01)
+y <- epid.fun(x,b,g)
+plot(x,y, type="l", ylab="dI/dt", xlab="I")
+abline(0,0)
+```
+
+The graph has one equilibrium point when x is 0. The curve to the right of 0 is negative, so the graph will decrease to 0 for all I contained in [0,1]. Thus, 0 is a stable equilibrium. When the initial value is 0.01, 0.8, and 0.5, the graph will decrease to 0 and stay there as it is a stable equilibrium.
+
+  
+3. Use the Forward Euler method to solve the SI model ODE for any given values of $\beta$ and $\gamma$. Use this script to solve the SI model ODE with parameters  $\beta = 0.1$ and $\gamma=0.03$, with a small time step (e.g. $dt =0.1$) and the following initial values: I(0) = 0.01; I(0) = 0.8; I(0) = 0.5. Plot the numerical solutions of the ODE over a sufficiently large time *Tmax* to observe convergence. Report whether the epidemic persists or burns out, whether it depends on the initial value, and comment on whether the solution dynamics agrees with your prediction in task 1.
+ 
+```{r}
+b <- 0.1
+g <- 0.03
+dt <- 0.1
+Tmax <- 200
+Nstep <- Tmax/dt
+t <- dt*(0:Nstep)
+x <- rep(0, Nstep+1)
+x[1] <- 0.01
+for (i in 1:Nstep){
+  x[i+1] <- x[i] + dt*epid.fun(x[i],b,g)
+}
+plot(t,x, type="l", ylab="population", xlab="time")
+
+x <- rep(0, Nstep+1)
+x[1] <- 0.8
+for (i in 1:Nstep){
+  x[i+1] <- x[i] + dt*epid.fun(x[i],b,g)
+}
+plot(t,x, type="l", ylab="population", xlab="time")
+
+x <- rep(0, Nstep+1)
+x[1] <- 0.5
+for (i in 1:Nstep){
+  x[i+1] <- x[i] + dt*epid.fun(x[i],b,g)
+}
+plot(t,x, type="l", ylab="population", xlab="time")
+```
+
+The solution plots agree with my prediction in task 1. All the graphs converge to 0.7, no matter then initial value. Therefore, in all cases, the epidemic persists.
+
+4. Use the Forward Euler method to solve the SI model ODE with parameters $\beta = 0.1$ and $\gamma=0.5$, with a small time step (e.g. dt =0.1) and the following initial values: I(0) = 0.0$; I(0) = 0.8; I(0) = 0.5. Plot the numerical solutions of the ODE over a sufficiently large time *Tmax* to observe convergence. Report whether the epidemic persists or burns out, whether it depends on the initial value, and comment on whether the solution dynamics agrees with your prediction in task 2.
+
+```{r}
+b <- 0.1
+g <- 0.5
+dt <- 0.1
+Tmax <- 200
+Nstep <- Tmax/dt
+t <- dt*(0:Nstep)
+x <- rep(0, Nstep+1)
+x[1] <- 0.01
+for (i in 1:Nstep){
+  x[i+1] <- x[i] + dt*epid.fun(x[i],b,g)
+}
+plot(t,x, type="l", ylab="population", xlab="time")
+
+x <- rep(0, Nstep+1)
+x[1] <- 0.8
+for (i in 1:Nstep){
+  x[i+1] <- x[i] + dt*epid.fun(x[i],b,g)
+}
+plot(t,x, type="l", ylab="population", xlab="time")
+
+x <- rep(0, Nstep+1)
+x[1] <- 0.5
+for (i in 1:Nstep){
+  x[i+1] <- x[i] + dt*epid.fun(x[i],b,g)
+}
+plot(t,x, type="l", ylab="population", xlab="time")
+```
+
+The solution plots agree with my prediction in task 2. All the graphs converge to 0, no matter then initial value. Therefore, in all cases, the epidemic burns out.
+
+  
+5. For $I(0)=0.5$ and $\beta=0.1$; starting with $\gamma=0.3$, progressively decrease the value of the recovery rate $\gamma$, and report the behavior of the numerical solution (with a small enough *dt* and a large enough *Tmax*). Report the critical value  of $\gamma$ at which the epidemic becomes self-sustaining. Keep decreasing the recovery rate and report what happens to the equilibrium fraction of infected people. Does it ever get to 1?
+
+```{r}
+b <- 0.1
+g <- 0.3
+dt <- 0.1
+Tmax <- 500
+Nstep <- Tmax/dt
+t <- dt*(0:Nstep)
+x <- rep(0, Nstep+1)
+x[1] <- 0.01
+for (i in 1:Nstep){
+  x[i+1] <- x[i] + dt*epid.fun(x[i],b,g)
+}
+plot(t,x, type="l", ylab="population", xlab="time")
+
+g <- 0.25
+x <- rep(0, Nstep+1)
+x[1] <- 0.01
+for (i in 1:Nstep){
+  x[i+1] <- x[i] + dt*epid.fun(x[i],b,g)
+}
+plot(t,x, type="l", ylab="population", xlab="time")
+
+g <- 0.2
+x <- rep(0, Nstep+1)
+x[1] <- 0.01
+for (i in 1:Nstep){
+  x[i+1] <- x[i] + dt*epid.fun(x[i],b,g)
+}
+plot(t,x, type="l", ylab="population", xlab="time")
+
+g <- 0.15
+x <- rep(0, Nstep+1)
+x[1] <- 0.01
+for (i in 1:Nstep){
+  x[i+1] <- x[i] + dt*epid.fun(x[i],b,g)
+}
+plot(t,x, type="l", ylab="population", xlab="time")
+
+g <- 0.1
+x <- rep(0, Nstep+1)
+x[1] <- 0.01
+for (i in 1:Nstep){
+  x[i+1] <- x[i] + dt*epid.fun(x[i],b,g)
+}
+plot(t,x, type="l", ylab="population", xlab="time")
+
+g <- 0.05
+x <- rep(0, Nstep+1)
+x[1] <- 0.01
+for (i in 1:Nstep){
+  x[i+1] <- x[i] + dt*epid.fun(x[i],b,g)
+}
+plot(t,x, type="l", ylab="population", xlab="time")
+
+g <- 0.04
+x <- rep(0, Nstep+1)
+x[1] <- 0.01
+for (i in 1:Nstep){
+  x[i+1] <- x[i] + dt*epid.fun(x[i],b,g)
+}
+plot(t,x, type="l", ylab="population", xlab="time")
+
+g <- 0.03
+x <- rep(0, Nstep+1)
+x[1] <- 0.01
+for (i in 1:Nstep){
+  x[i+1] <- x[i] + dt*epid.fun(x[i],b,g)
+}
+plot(t,x, type="l", ylab="population", xlab="time")
+
+g <- 0.02
+x <- rep(0, Nstep+1)
+x[1] <- 0.01
+for (i in 1:Nstep){
+  x[i+1] <- x[i] + dt*epid.fun(x[i],b,g)
+}
+plot(t,x, type="l", ylab="population", xlab="time")
+
+g <- 0.01
+x <- rep(0, Nstep+1)
+x[1] <- 0.01
+for (i in 1:Nstep){
+  x[i+1] <- x[i] + dt*epid.fun(x[i],b,g)
+}
+plot(t,x, type="l", ylab="population", xlab="time")
+
+g <- 0
+x <- rep(0, Nstep+1)
+x[1] <- 0.01
+for (i in 1:Nstep){
+  x[i+1] <- x[i] + dt*epid.fun(x[i],b,g)
+}
+plot(t,x, type="l", ylab="population", xlab="time")
+```
+
+The epidemic becomes self-sustaining with a gamma of 0.05 The equilibrium fraction of infected increases as the recovery rate decreases. The equilibrium fraction of infected people only reaches 1 when the recovery rate is 0.

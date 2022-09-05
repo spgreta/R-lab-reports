@@ -1,0 +1,498 @@
+# lab 4 report for BIOS 20152
+
+Sarah Greta
+
+## Part 1: Effect of prior probability on predictive value of a test
+
+This simulation illustrates the paper by Ioannidis ``Why most published research findings are wrong.''  The basic idea is that if a hypothesis has a small prior probability of being true (e.g. looking through an entire genome for SNPs that are linked with a disease) then a positive result has a low predictive value. We will simulate this by controlling the *prior probability* of the hypothesis being true and the *sensitivity* and *specificity* of the test. In the following tasks, use conditional statements to make two random decisions: 
+1. is the hypothesis actually true or false (e.g. is a SNP linked to the disease) and 
+2. what the outcome of the test is (reject or not reject the hypothesis of no linkage). 
+
+The following script uses a random number to decide whether a particular SNP is linked, according to a prior probability.
+
+```{r}
+prior.prob <- 0.1 # set the prior probability of the SNP being linked to disease
+decider <- runif(1) # generate a uniform random number between 0 and 1
+if (decider < prior.prob) { # if the random number is less than prob
+  link <- 1 # SNP is linked to disease
+} else {
+  link <- 0 # SNP is independent of disease
+}
+```
+
+The following script simulates running a hypothesis test for linkage of SNP and disease with a sensitivity (rate of true positive) and specificity (rate of true negative). It checks if the null hypothesis is true (link==0) or false (link==1) and randomly decides if the test gets the correct result or not.
+
+```{r}
+spec <- 0.7 # set specificity
+sens <- 0.8 # set sensitivity
+FP <- 0
+TN <- 0
+FN <- 0
+TP <- 0
+decider <- runif(1) # generate a uniform random number between 0 and 1
+if (link==1) { # SNP is linked to disease (null is false)
+  if (decider < sens) { # the test correctly identifies the linkage
+    TP <- TP+1 # increment the number of true positives
+  } else {
+    FN <- FN+1 # increment the number of false negatives
+  }  
+} else { # SNP is not linked (null is true)
+if (decider < spec) { # the test correctly says there is no linkage
+    TN <- TN+1 # increment the number of true negatives
+  } else { 
+    FP <- FP+1 # increment the number of false positives
+  }
+}
+print(paste("The number of true positives is",TP))
+print(paste("The number of true negatives is",TN))
+print(paste("The number of false positives is",FP))
+print(paste("The number of false negatives is",FN))
+```
+
+However, both of the scripts above contain errors. Identify and fix the mistakes before proceeding to the rest of the lab assignment.
+
+1. Use the second of the sample scripts provided above to simulate a test for a SNP which is linked to a disease (set link to 1) with specificity of 0.8 and sensitivity of 0.9. Put a for loop around the script to run it 100 times and count how many of the test results are true positives, false positives, true negatives, and false negatives are generated (hint: only two of those are possible). How many times does the hypothesis test make the correct decision? 
+
+```{r}
+spec <- 0.8
+sens <- 0.9
+FP <- 0
+TN <- 0
+FN <- 0
+TP <- 0
+n.trials <- 100
+for (i in 1:n.trials) {
+decider <- runif(1)
+link <- 1
+if (link==1) {
+  if (decider < sens) {
+    TP <- TP+1
+  } else {
+    FN <- FN+1 
+  }  
+} else {
+if (decider < spec) { 
+    TN <- TN+1 
+  } else { 
+    FP <- FP+1 
+  }
+}
+}
+print(paste("The number of true positives is",TP))
+print(paste("The number of true negatives is",TN))
+print(paste("The number of false positives is",FP))
+print(paste("The number of false negatives is",FN))
+```
+  
+The hypothesis test delivers 87 true positive results out of 100 test runs. The other 13 results are false negatives because true negatives and false positives are not possible for this test because sensitivity is the higher value, so the decider will never be less than specificity but not less than sensitivity.
+ 
+2. Run the same script with link set to 0, with the same specificity and sensitivity of the test and count how many of the 100 test results are true positives, false positives, true negatives, and false negatives are generated (hint: only two of those are possible). How many times does the hypothesis test make the correct decision?
+
+```{r}
+FP <- 0
+TN <- 0
+FN <- 0
+TP <- 0
+for (i in 1:n.trials) {
+decider <- runif(1)
+link2 <- 0
+if (link2==0) {
+  if (decider < sens) {
+    TP <- TP+1
+  } else {
+    FN <- FN+1 
+  }  
+} else {
+if (decider < spec) { 
+    TN <- TN+1 
+  } else { 
+    FP <- FP+1 
+  }
+}
+}
+print(paste("The number of true positives is",TP))
+print(paste("The number of true negatives is",TN))
+print(paste("The number of false positives is",FP))
+print(paste("The number of false negatives is",FN))
+```
+  
+The hypothesis test results in 90 correct true positive results and only 10 false negatives.
+  
+3. Use the first of the provided scripts to randomly simulate drawing SNPs with the prior probability 0.01 that a SNP is linked to the disease, followed by the second script to simulate the hypothesis test. Use the same sensitivity and specificity values as above and run the loop for 1000 trials. Based on your counts of the different test outcomes, report the positive predictive value of the test (the probability that the SNP is linked to disease, given that the test result is positive, or the fraction of true positives out of all positives).
+
+```{r}
+FP <- 0
+TN <- 0
+FN <- 0
+TP <- 0
+n.trials <- 1000
+for (i in 1:n.trials) {
+  prior.prob <- 0.01
+decider <- runif(1)
+if (decider < prior.prob) {
+  link <- 1
+} else {
+  link <- 0
+}
+decider <- runif(1)
+if (link==1) {
+  if (decider < sens) {
+    TP <- TP+1
+  } else {
+    FN <- FN+1 
+  }  
+} else {
+if (decider < spec) { 
+    TN <- TN+1 
+  } else { 
+    FP <- FP+1 
+  }
+}
+}
+print(paste("The number of true positives is",TP))
+print(paste("The number of true negatives is",TN))
+print(paste("The number of false positives is",FP))
+print(paste("The number of false negatives is",FN))
+```
+  
+The test resulted in 7 true positives and 210 false positives. So, the positive predictive value is 7/217, which is 0.03225806.
+ 
+4. Let us investigate the effect of changing the prior probability of the hypothesis being true. Change the prior probability to 0.1, use the same sensitivity and specificity values as before, and run the loop for 1000 trials and report the positive predictive value of the test. Now change the prior probability to 0.001, use the same sensitivity and specificity values as before, and run the loop for 1000 trials and report the positive predictive value of the test. How does the prior probability affect the positive predictive value? What implication does this have for testing a large number of hypotheses with low prior probabilities, such as thousands of SNPs in the human genome?
+
+```{r}
+FP <- 0
+TN <- 0
+FN <- 0
+TP <- 0
+n.trials <- 1000
+for (i in 1:n.trials) {
+  prior.prob <- 0.1
+decider <- runif(1)
+if (decider < prior.prob) {
+  link <- 1
+} else {
+  link <- 0
+}
+decider <- runif(1)
+if (link==1) {
+  if (decider < sens) {
+    TP <- TP+1
+  } else {
+    FN <- FN+1 
+  }  
+} else {
+if (decider < spec) { 
+    TN <- TN+1 
+  } else { 
+    FP <- FP+1 
+  }
+}
+}
+print(paste("The number of true positives is",TP))
+print(paste("The number of true negatives is",TN))
+print(paste("The number of false positives is",FP))
+print(paste("The number of false negatives is",FN))
+
+FP2 <- 0
+TN2 <- 0
+FN2 <- 0
+TP2 <- 0
+for (i in 1:n.trials) {
+  prior.prob <- 0.001
+decider <- runif(1)
+if (decider < prior.prob) {
+  link <- 1
+} else {
+  link <- 0
+}
+decider <- runif(1)
+if (link==1) {
+  if (decider < sens) {
+    TP2 <- TP2+1
+  } else {
+    FN2 <- FN2+1 
+  }  
+} else {
+if (decider < spec) { 
+    TN2 <- TN2+1 
+  } else { 
+    FP2 <- FP2+1 
+  }
+}
+}
+print(paste("The number of true positives is",TP2))
+print(paste("The number of true negatives is",TN2))
+print(paste("The number of false positives is",FP2))
+print(paste("The number of false negatives is",FN2))
+```
+  
+With a prior probablitlity of 0.1, the number of true positives is 93 and the number of false positives is 162. So, the positive predictive value is 93/255, which is 0.3647058. With a prior probablility of 0.001, the number of true positives is 0 and the number of false positives is 196. So, the positive predictive value is 0/196, which is 0.0. When the prior probablility is lower, the positive predictive value is much lower. This means that for testing a large number of hypotheses with low prior probabilities, there will be very few true positive results. So the chances of rejecting a false hypothesis is very low when the prior probability is very low. In the case of testing thousands of SNPs in the human genome for a link to disease, which has a very low prior probability, the chance of rejecting a false hypothesis is very low, so any positive test results are highly suspect.
+  
+5. Let us investigate the effect of changing the sensitivity and specificity of the test. Set the prior probability to 0.1, set the sensitivity to be 0.9 and the specificity to be 0.9, and run the loop for 1000 trials and report the positive predictive value of the test. Now change the sensitivity to 0.99 and specificity to 0.9, run the loop for 1000 trials and report the positive predictive value of the test.  Finally, set the sensitivity to be 0.8 and the specificity to be 0.99, and again and report the positive predictive value of the test. Which parameter (sensitivity or specificity) has the largest effect on the positive predictive value?
+
+```{r}
+sens <- 0.9
+spec <- 0.9
+FP <- 0
+TN <- 0
+FN <- 0
+TP <- 0
+n.trials <- 1000
+for (i in 1:n.trials) {
+  prior.prob <- 0.1
+decider <- runif(1)
+if (decider < prior.prob) {
+  link <- 1
+} else {
+  link <- 0
+}
+decider <- runif(1)
+if (link==1) {
+  if (decider < sens) {
+    TP <- TP+1
+  } else {
+    FN <- FN+1 
+  }  
+} else {
+if (decider < spec) { 
+    TN <- TN+1 
+  } else { 
+    FP <- FP+1 
+  }
+}
+}
+print(paste("The number of true positives is",TP))
+print(paste("The number of true negatives is",TN))
+print(paste("The number of false positives is",FP))
+print(paste("The number of false negatives is",FN))
+
+sens2 <- 0.99
+spec2 <- 0.9
+FP2 <- 0
+TN2 <- 0
+FN2 <- 0
+TP2 <- 0
+for (i in 1:n.trials) {
+  prior.prob <- 0.1
+decider <- runif(1)
+if (decider < prior.prob) {
+  link <- 1
+} else {
+  link <- 0
+}
+decider <- runif(1)
+if (link==1) {
+  if (decider < sens2) {
+    TP2 <- TP2+1
+  } else {
+    FN2 <- FN2+1 
+  }  
+} else {
+if (decider < spec2) { 
+    TN2 <- TN2+1 
+  } else { 
+    FP2 <- FP2+1 
+  }
+}
+}
+print(paste("The number of true positives is",TP2))
+print(paste("The number of true negatives is",TN2))
+print(paste("The number of false positives is",FP2))
+print(paste("The number of false negatives is",FN2))
+
+sens3 <- 0.8
+spec3 <- 0.99
+FP3 <- 0
+TN3 <- 0
+FN3 <- 0
+TP3 <- 0
+for (i in 1:n.trials) {
+  prior.prob <- 0.1
+decider <- runif(1)
+if (decider < prior.prob) {
+  link <- 1
+} else {
+  link <- 0
+}
+decider <- runif(1)
+if (link==1) {
+  if (decider < sens3) {
+    TP3 <- TP3+1
+  } else {
+    FN3 <- FN3+1 
+  }  
+} else {
+if (decider < spec3) { 
+    TN3 <- TN3+1 
+  } else { 
+    FP3 <- FP3+1 
+  }
+}
+}
+print(paste("The number of true positives is",TP3))
+print(paste("The number of true negatives is",TN3))
+print(paste("The number of false positives is",FP3))
+print(paste("The number of false negatives is",FN3))
+```
+  
+With a specificity and sensitivity of 0.9, the number of true positives is 93 and the number of false positives is 92. So the positive predictive value is 93/185, which is 0.5027027. With a sensitivity of 0.99 and a specificity of 0.9, the number of true positives is 99 and the number of false positives is 91. So the positive predictive value is 99/190, which is 0.5210526. With a sensitivity of 0.8 and a specificity of 0.99, the number of true positives is 89 and the number of false positives is 6. So the positive predictive value is 89/95, which is 0.9368421. Therefore, specificity has the largest effect on the positive predictive value.
+ 
+
+## Part 2: Linear regression
+ 
+The commands for calculating and plotting a linear regression in R are illustrated in the script below for a generated data set:
+```{r}
+x.data <- sample(0:100,20) # generate some explanatory data points
+y.data <- -5*x.data+100+20*runif(20) # generate response data points with linear relationship plus noise
+myfit <- lm(y.data ~ x.data) # perform linear regression with y.data as the response variable
+plot(x.data,y.data)
+abline(myfit)
+summary(myfit)
+```
+
+Here x.data and y.data are the explanatory and response variables, respectively; one can add the name of the dataframe in which they are stored, as follows: lm (y.data ~ x.data, dataframe). The best fit parameters are assigned to myfit, and the line can be plotted using abline(myfit). The information from the linear regression can be accessed by typing summary(myfit). Load the data file kong_mutation_data.txt and  investigate the relationship between the variables in the following tasks.
+
+ 
+1. Find and plot the linear regression for Mutations as a function of PatAge (label your axes). How does the slope compare to the fit your performed by eye in Lab 1? What does the slope of that line mean? What fraction of the variance is explained by the linear relationship?
+
+```{r}
+mut.data <- read.table("kong_mutation_data.txt", header=TRUE)
+x <- mut.data$PatAge
+y <- mut.data$Mutations
+myfit <- lm(y ~ x, mut.data)
+plot(x, y, xlab="Paternal Age (in years)", ylab="Mutations", main="Mutations as a function of Paternal Age at conception")
+abline(myfit)
+summary(myfit)
+```
+  
+The slope for this graph is 2.0122, whereas the slope in the first lab was 2.59. So for each year older than the father is at conception, there are around 2 more mutations. 65.34% of the variance is explained by the linear relationship.
+ 
+2. Find and plot the linear regression for Mutations as a function of MatAge (label your axes). What does the slope of that line tell you? What fraction of the variance is explained by the linear relationship? Is the number of de novo mutations explained better by maternal age or paternal age?
+
+```{r}
+x <- mut.data$MatAge
+myfit <- lm(y ~ x, mut.data)
+plot(x, y, xlab="Maternal Age", ylab="Mutations", main="Mutations as a function of Maternal Age")
+abline(myfit)
+summary(myfit)
+```
+  
+The slope of this line is 1.8518. So, for each year the mother ages, there are around 2 more mutations. 48.11% of the variance is explained by the linear regression. The number of de novo mutation is explained better by paternal age because the linear regression explained more of the variance.
+  
+3. Read in the data set of heart rates measured in week 2 and week 4, called HR_2weeks.txt. The two variables are called HR1 and HR2. Perfrom linear regression on these two variables with HR1 as the explanatory (X) variable, and report the slope, the intercept, and the correlation. Plot the scatterplot, the best fit lines, and the identity line (y=x) on the same figure. If the data were divided into two groups, with those below average heart rate and those above average in HR1, how do their heart rates change on average in HR2?
+
+```{r}
+HRw2.data <- read.table("HR_2weeks.txt", header=TRUE)
+x <- HRw2.data$HR1
+y <- HRw2.data$HR2
+myfit <- lm(y ~ x, HRw2.data)
+summary(myfit)
+plot(x,y, xlab="Initial Heart Rates", ylab="Heart Rates after Two Weeks", main="Heart Rates over Two Weeks")
+abline(myfit)
+lines(x,x, col="aquamarine")
+meanHR1 <- mean(x)
+meanHR2 <- mean(y)
+print(meanHR1)
+print(meanHR2)
+
+```
+  
+The slope of the line is 0.6035. The y-intercept is 34.5186. The correlation is 0.4869.
+The identity line is aquamarine. In general, if the heart rates were below the average initially, they were above average after two weeks. If the heart rates were above average initially, they were below average after two weeks. So the heart rates regressed to the mean.
+  
+## Part 3 Exponential fit using linear regression with a log transform
+
+Now we will fit a data set with an exponentialfunctions by transforming the exponential function into a linear form and use linear regression to fit the parameters. To do this, we take the logarithm of the dependent variable:
+$$ y = B+Ae^{kx} \Rightarrow y-B = Ae^{kx} \Rightarrow \log(y-B) = \log(A) + kx $$
+
+As you see, after subtracting the response variable y from B (the asymptotic value) and taking the logarithm, the resulting variable has a linear relationship with the explanatory variable x. So if you know the asymptote B (which you can easily measure from the graph), you can use linear regression to find log(A) (the intercept) and k (the slope) from the linear regression. Here is a sample script to use:
+```{r}
+x.data <- runif(20) # generate some explanatory data points
+A <- -5
+B <- 100
+k <- -4
+y.data <- A*exp(k*x.data)+B+0.1*runif(20) # generate response data points with an exponenetial, plus noise
+myfit <- lm(log(abs(y.data-B)) ~ x.data) # fit the log-transformed data to a linear relationship
+plot(x.data,y.data)
+summary(myfit)
+```
+To plot the results, take the coefficients from myfit and obtain the parameters A and k, then use them with exponential function to plot your fit using the curve() function.
+
+1. Load the data file KaiC_data.txt, perform linear regression after log-transforming the depedendent variable and plot the graph of the fit using lines over the scatterplot. Report the quality of the fit and compare the result with the parameters (A and k) you obtained by estimating by eye in lab 1. Important hint: the sign of the parameters needs to be set by you because we took the absolute value of the difference inside the logarithm.
+
+```{r}
+kaic.data <- read.table("KaiC_data.txt", header=TRUE)
+x <- kaic.data$Time
+y <- kaic.data$Amount
+B <- 75
+myfit <- lm(log(abs(y-B)) ~ x)
+plot(x,y)
+summary(myfit)
+y.int <- 3.67239
+m <- -0.54414
+A <- exp(y.int)
+print(A)
+curve(-A*exp(m*x)+B, add=TRUE)
+```
+
+The quality of the fit is fairly good. It misses some of the beginning points, but hits most of the latter ones. The A value for this graph is -39.34583 whereas in the first lab it was -58. The k value for this graph is -0.54414 whereas in the first lab it was -0.7. The B value for this graph is 75 whereas for the first lab it was 74.
+
+2. You might notice that the resulting fit is not very good, due to the inherent limitations of the log-transform. To improve the fit, restrict the data set to the first 8 time points of the KaiC data (hint: remember how to work with vectors), obtain new parameters from linear regression and produce a new graph. Does it fit better? How does its rate k compare to the one you estimated in lab 1?
+
+```{r}
+kamt8.data <- kaic.data$Amount[1:8]
+kt8.data <- kaic.data$Time[1:8]
+x <- kt8.data
+y <- kamt8.data
+B <- 75
+myfit <- lm(log(abs(y-B)) ~ x)
+plot(x,y)
+summary(myfit)
+y.int <- 4.14379
+m <- -0.68579
+A <- exp(y.int)
+print(A)
+curve(-A*exp(m*x)+B, add=TRUE)
+```
+
+The line fits much better in this graph. It hits almost every point. Its rate k is -0.68579, whereas in the first lab it was -0.7.
+
+3. Load the data file insulin_data.txt, perform linear regression on the data set after log-transforming the dependent variable and plot the graph of the fit using lines over the scatterplot. Report the quality of the fit and compare the result with the parameters you obtained by estimating the parameters in lab 1.Important hint: the sign of the parameters needs to be set by you because we took the absolute value of the difference inside the logarithm.
+
+
+```{r}
+ins.data <- read.table("Insulin_data.txt", header=TRUE)
+x <- ins.data$Time
+y <- ins.data$Conc
+B <- 10
+myfit <- lm(log(abs(y-B)) ~ x)
+plot(x,y)
+summary(myfit)
+y.int <- 4.397278
+m <- -0.032546
+A <- exp(y.int)
+print(A)
+curve(A*exp(m*x)+B, add=TRUE)
+```
+
+The fit is of fair quality. The line meets most of the last points, but very few of the first. The A value for this graph is 81.22946 whereas in the first lab it was 175. The k value for this graph is -0.032546 whereas in the first lab it was -0.1. The B value for this graph is 10, which is the same as the first lab.
+
+4.  You might notice again that the fit is not very good. Restrict the data set to the first 10 time points of Insulin data, obtain new parameters from linear regression (choose a different asymptote $B$), and produce a new graph. Does it fit better? How does its rate k compare to the one you estimated by eye in lab 1?
+
+```{r}
+insc10.data <- ins.data$Conc[1:10]
+inst10.data <- ins.data$Time[1:10]
+x <- inst10.data
+y <- insc10.data
+B <- 40
+myfit <- lm(log(abs(y-B)) ~ x)
+plot(x,y)
+summary(myfit)
+y.int <- 4.71971
+m <- -0.20175
+A <- 10^(y.int)
+print(A)
+curve(A*exp(m*x)+B, add=TRUE)
+```
+
+The line fits much better in this graph than the previous one. It hits some of the points and there is an almost equal distribution on either side of the line. Its rate k is -0.20175, whereas in the first lab it was -0.1.

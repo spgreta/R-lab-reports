@@ -1,0 +1,616 @@
+#lab 6 report for BIOS 20152
+
+Sarah Greta
+
+## Part 1: Propagating probability vectors of a two-state SI model
+Use the same SI model of an infectious epidemic as in lab 5, with transition probabilities of 0.04 (from S to I ) and 0.12 (from I to S).
+
+1. Suppose that a person is initially healthy (that is, the probability of susceptible is 1, and the probability of infected is 0). Use matrix multiplication to calculate the probability the person is infected after 1 day and after 2 days. 
+
+```{r}
+init.state <- matrix(c(1,0))
+prob.vec <- matrix(c(0.96,0.04,0.12,0.88), ncol=2)
+one.step <- prob.vec %*% init.state
+print(one.step)
+two.step <- prob.vec %*% one.step
+print(two.step)
+```
+
+The probability that a person is infected after 1 day is 0.04. The probability that a person is infected after 2 days is 0.0736.
+
+2. Change the initial probability to the person being infected (probability of susceptible is 0, probability of infected is 1). Use matrix multiplication to calculate the probability the person is infected after 1 day and after 2 days. 
+
+```{r}
+init.state <- matrix(c(0,1))
+one.step <- prob.vec %*% init.state
+print(one.step)
+two.step <- prob.vec %*% one.step
+print(two.step)
+```
+
+The probability that a person is infected after 1 day is 0.88. The probability that a person is infected after 2 days is 0.7792.
+
+3. Write a script to calculate the distribution of infected and susceptible individuals for any given number of days (use a for loop). Using the script, calculate the probability distribution vectors for 20 days, using both initial probability vectors from above, save them as matrices, and plot the probability vectors over time using barplot(). How different are the probability distributions after 100 days? 
+
+```{r}
+nsteps <- 20
+all.sus <- matrix(0, nrow=2, ncol=nsteps+1)
+all.sus[,1] <- c(1,0)
+for (i in 1:nsteps) {
+  all.sus[,i+1] <- prob.vec %*% all.sus[,i]
+}
+all.inf <- matrix(0, nrow=2, ncol=nsteps+1)
+all.inf[,1] <- c(0,1)
+for (i in 1:nsteps) {
+  all.inf[,i+1] <- prob.vec %*% all.inf[,i]
+}
+barplot(all.sus, xlab="Time", names.arg=0:nsteps, ylab="Probability", cex=1.5, cex.axis=1.5, cex.lab=1.5, col=(c("lightcyan", "lightsalmon")))
+barplot(all.inf, xlab="Time", names.arg=0:nsteps, ylab="Probability", cex=1.5, cex.axis=1.5, cex.lab=1.5, col=(c("lavender","lightgoldenrod")))
+
+nsteps <- 100
+all.sus <- matrix(0, nrow=2, ncol=nsteps+1)
+all.sus[,1] <- c(1,0)
+for (i in 1:nsteps) {
+  all.sus[,i+1] <- prob.vec %*% all.sus[,i]
+}
+all.inf <- matrix(0, nrow=2, ncol=nsteps+1)
+all.inf[,1] <- c(0,1)
+for (i in 1:nsteps) {
+  all.inf[,i+1] <- prob.vec %*% all.inf[,i]
+}
+barplot(all.sus, xlab="Time", names.arg=0:nsteps, ylab="Probability", cex=1.5, cex.axis=1.5, cex.lab=1.5, col=(c("lightcyan", "lightsalmon")))
+barplot(all.inf, xlab="Time", names.arg=0:nsteps, ylab="Probability", cex=1.5, cex.axis=1.5, cex.lab=1.5, col=(c("lavender","lightgoldenrod")))
+```
+
+The barplot for the probability distribution after 100 days is the same as the probability distribution after 20 days. The only difference is that the barplot for the distribution after 100 days has an additional 80 days on its plot, so the distribution is stationary for most of the barplot. The barplot for the distribution after 20 days only just shows the convergence to the stationary distribution. This is the same for both initial probabilities.
+
+4. Change the infection rate (transition from S to I) to 0.2 and assign the new values to the transition matrix. Repeat the computations in task 3 with the new transition matrix and plot both probability distributions over time using barplot(). Are the probability distributions based on the two initial vectors different from each other? How is their time evolution different from the distributions in task 3?
+
+```{r}
+prob.vec <- matrix(c(0.8,0.2,0.12,0.88), ncol=2)
+nsteps <- 20
+all.sus <- matrix(0, nrow=2, ncol=nsteps+1)
+all.sus[,1] <- c(1,0)
+for (i in 1:nsteps) {
+  all.sus[,i+1] <- prob.vec %*% all.sus[,i]
+}
+all.inf <- matrix(0, nrow=2, ncol=nsteps+1)
+all.inf[,1] <- c(0,1)
+for (i in 1:nsteps) {
+  all.inf[,i+1] <- prob.vec %*% all.inf[,i]
+}
+barplot(all.sus, xlab="Time", names.arg=0:nsteps, ylab="Probability", cex=1.5, cex.axis=1.5, cex.lab=1.5, col=(c("lightcyan", "lightsalmon")))
+barplot(all.inf, xlab="Time", names.arg=0:nsteps, ylab="Probability", cex=1.5, cex.axis=1.5, cex.lab=1.5, col=(c("lavender","lightgoldenrod")))
+
+nsteps <- 100
+all.sus <- matrix(0, nrow=2, ncol=nsteps+1)
+all.sus[,1] <- c(1,0)
+for (i in 1:nsteps) {
+  all.sus[,i+1] <- prob.vec %*% all.sus[,i]
+}
+all.inf <- matrix(0, nrow=2, ncol=nsteps+1)
+all.inf[,1] <- c(0,1)
+for (i in 1:nsteps) {
+  all.inf[,i+1] <- prob.vec %*% all.inf[,i]
+}
+barplot(all.sus, xlab="Time", names.arg=0:nsteps, ylab="Probability", cex=1.5, cex.axis=1.5, cex.lab=1.5, col=(c("lightcyan", "lightsalmon")))
+barplot(all.inf, xlab="Time", names.arg=0:nsteps, ylab="Probability", cex=1.5, cex.axis=1.5, cex.lab=1.5, col=(c("lavender","lightgoldenrod")))
+```
+
+The probability distributions for the different initial probabilities differ in their initial probabilities, but by around the 14th time step the distributions have the same values for susceptible and infected. The time evolution for the probability distributions for this task differ from those in task 3 because the distributions in this task converge more quickly. 
+
+## Part 2: Multiple simulations of a two state Markov model
+In this part you will simulate multiple individuals undergoing random transitions between S (susceptible) and I (infected) with transition probabilities of 0.04 (from S to I ) and 0.12 (from I to S). 
+
+1. Simulate the state histories of 100 individuals for 20 days (generating 100 separate state strings), starting with all 100 individuals in state S (number 1). Plot the histograms (frequencies of states 1 and 2) over time using the code provided above. Describe the behavior of the histograms over time. Does the distribution after 20 days remain the same if you run your script multiple times?
+
+```{r}
+trans1to2 <- 0.04
+trans2to1 <- 0.12
+nsteps <- 20
+npeople <- 100
+nstates <- 2
+state.vec <- matrix(1, nrow=npeople+1, ncol=nsteps+1)
+for (j in 1:npeople){
+for (i in 1:nsteps) {
+decider <- runif(1)
+if (state.vec[j,i]==1) {
+  if (decider < trans1to2){
+    state.vec[j,i+1] <- 2
+  } else {
+    state.vec[j,i+1] <- 1
+  } 
+} else if (state.vec[j,i]==2) {
+    if (decider < trans2to1) {
+      state.vec[j,i+1] <- 1
+    } else {
+      state.vec[j,i+1] <- 2
+    }
+}
+}
+}
+state.count <- matrix(0,nrow=nstates,ncol=nsteps+1)
+for (k in 1:(nsteps+1)) {
+  state.count[,k] <- tabulate(state.vec[,k],nbins=nstates)
+}
+barplot(state.count,main='frequency of states vs. time',xlab='time', names.arg=1:(nsteps+1),ylab='S or I',col=(c("skyblue1", "darkseagreen1")))
+```
+
+According to the histogram, the number of susceptible individuals starts to decrease over time. The histogram varies slightly after each separate run, but the pattern of susceptible individuals decreasing remains. The histogram generally converges to between 70 and 80 susceptible individuals.
+
+2. Repeat the last task, but set the initial states of all 100 individuals to I (number 2). Again, plot the histograms (frequencies of states 1 and 2) and describe the behavior of the histogram over time.  Does the distribution between 1 and 2 look the same as in the previous task after 20 days?
+
+```{r}
+trans1to2 <- 0.04
+trans2to1 <- 0.12
+nsteps <- 20
+npeople <- 100
+nstates <- 2
+state.vec <- matrix(2, nrow=npeople+1, ncol=nsteps+1)
+for (j in 1:npeople){
+for (i in 1:nsteps) {
+decider <- runif(1)
+if (state.vec[j,i]==1) {
+  if (decider < trans1to2){
+    state.vec[j,i+1] <- 2
+  } else {
+    state.vec[j,i+1] <- 1
+  } 
+} else if (state.vec[j,i]==2) {
+    if (decider < trans2to1) {
+      state.vec[j,i+1] <- 1
+    } else {
+      state.vec[j,i+1] <- 2
+    }
+}
+}
+}
+state.count <- matrix(0,nrow=nstates,ncol=nsteps+1)
+for (k in 1:(nsteps+1)) {
+  state.count[,k] <- tabulate(state.vec[,k],nbins=nstates)
+}
+barplot(state.count,main='frequency of states vs. time',xlab='time', names.arg=1:(nsteps+1),ylab='S or I',col=(c("skyblue1", "darkseagreen1")))
+```
+
+According to the histogram, the number of susceptible individuals increases and then starts to increase more slowly and pleateu after around 13 days. The histograms from task one and this task have similar distributions between susceptible and infected individuals after 20 days.
+
+3. Change the infection rate (transition from S to I) to 0.2, and simulate a population of 100 individuals over 20 days, starting with everyone in the susceptible state, and plot the histograms over time. Describe the behavior of the histogram over time. Does the distribution after 20 days remain the same if you run your script multiple times? Do the histograms converge to the same distribution as in task 1?
+
+```{r}
+trans1to2 <- 0.20
+trans2to1 <- 0.12
+nsteps <- 20
+npeople <- 100
+nstates <- 2
+state.vec <- matrix(1, nrow=npeople+1, ncol=nsteps+1)
+for (j in 1:npeople){
+for (i in 1:nsteps) {
+decider <- runif(1)
+if (state.vec[j,i]==1) {
+  if (decider < trans1to2){
+    state.vec[j,i+1] <- 2
+  } else {
+    state.vec[j,i+1] <- 1
+  } 
+} else if (state.vec[j,i]==2) {
+    if (decider < trans2to1) {
+      state.vec[j,i+1] <- 1
+    } else {
+      state.vec[j,i+1] <- 2
+    }
+}
+}
+}
+state.count <- matrix(0,nrow=nstates,ncol=nsteps+1)
+for (k in 1:(nsteps+1)) {
+  state.count[,k] <- tabulate(state.vec[,k],nbins=nstates)
+}
+barplot(state.count,main='frequency of states vs. time',xlab='time', names.arg=1:(nsteps+1),ylab='S or I',col=(c("skyblue1", "darkseagreen1")))
+```
+
+The number of susceptible individuals quickly decreases over time, more quickly than in task 1. The histogram varies slightly after various runs but generally converges to around 40 to 50 susceptible individuals. The histograms converge to different distributions than those in task 1.
+
+4. Keep the same transition probability as in task 3 and simulate a population of 100 individuals over 20 days, starting with everyone in the infected state, and plot the histograms over time. Describe the behavior of the histogram over time. Does the distribution after 20 days remain the same if you run your script multiple times? Do the histograms converge to the same distribution as in task 2?
+
+
+```{r}
+trans1to2 <- 0.20
+trans2to1 <- 0.12
+nsteps <- 20
+npeople <- 100
+nstates <- 2
+state.vec <- matrix(2, nrow=npeople+1, ncol=nsteps+1)
+for (j in 1:npeople){
+for (i in 1:nsteps) {
+decider <- runif(1)
+if (state.vec[j,i]==1) {
+  if (decider < trans1to2){
+    state.vec[j,i+1] <- 2
+  } else {
+    state.vec[j,i+1] <- 1
+  } 
+} else if (state.vec[j,i]==2) {
+    if (decider < trans2to1) {
+      state.vec[j,i+1] <- 1
+    } else {
+      state.vec[j,i+1] <- 2
+    }
+}
+}
+}
+state.count <- matrix(0,nrow=nstates,ncol=nsteps+1)
+for (k in 1:(nsteps+1)) {
+  state.count[,k] <- tabulate(state.vec[,k],nbins=nstates)
+}
+barplot(state.count,main='frequency of states vs. time',xlab='time', names.arg=1:(nsteps+1),ylab='S or I',col=(c("skyblue1", "darkseagreen1")))
+```
+
+According to the histogram, the number of susceptible individuals slowly increases and pleateus at 40 susceptible individual after around 9 days. The histograms generally remain the same after several re-runs. The histogram in this task converge to different distributions than those in task 2.
+
+
+## Part 3: Propagating probability vectors of the 3-state model of an ion channel
+In this project we return to the three-state model of nicotinic acetylcholine receptor (nAChR) we saw in the last chapter. As before, set the transition probabilities to the following: 0.04 (from C1 to C2), 0.07 (from C2 to C1), 0.12 (from C2 to O) and 0.02 (from O to C2); the other transition probabilities are 0.
+
+
+1. Write down the transition matrix for the model and assign it to a matrix in R. Compute the eigenvalues and eigenvectors of the matrix and predict the stationary distribution vector and the rate of convergence to the stationary distribution.
+
+
+```{r}
+trans.matrix <- matrix(c(0.96, 0.04, 0, 0.07, 0.81, 0.12, 0, 0.02, 0.98), nrow=3)
+test <- eigen(trans.matrix)
+print(test$values)
+print(test$vectors)
+eigen1 <- test$vectors[,1]/sum(test$vectors[,1])
+print(eigen1)
+eigen2 <- test$vectors[,2]/test$vectors[1,2]
+print(eigen2)
+eigen3 <- test$vectors[,3]/test$vectors[2,3]
+print(eigen3)
+```
+
+The stationary distribution vector is "eigen1", which has the values 0.2000000, 0.1142857, and 0.6857143. The rate of convergence to the stationary distribution is similar to the exponential decay of the second largest eigenvalue, 0.9678709^x, where x is time.
+
+2. Suppose that ion channels all start out in state C1 with probability 1. Write a script to propagate the probability vector for any given length of time, and plot the probability vector over 100 microseconds. Does the distribution converge to an equilibrium and if so, over how many time steps (approximately)? Comment on how this relates to the rate of convergence predicted in the previous task.
+
+
+```{r}
+trans.matrix <- matrix(c(0.96, 0.04, 0, 0.07, 0.81, 0.12, 0, 0.02, 0.98), nrow=3)
+nsteps <- 100
+prob.vec <- matrix(0, nrow=3, ncol=nsteps+1)
+prob.vec[,1] <- c(1,0,0)
+for (i in 1:nsteps) {
+  prob.vec[,i+1] <- trans.matrix %*% prob.vec[,i]
+}
+barplot(prob.vec, xlab="Time", names.arg=0:nsteps, ylab="Probability", cex=1.5, cex.axis=1.5, cex.lab=1.5, col=(c("lightcyan", "lightsalmon", "lavender")))
+x <- 0:nsteps
+lines(x, 0.9678709^x)
+
+```
+
+This distribution starts to converge to an equilibrium at approvimately 90 time steps, but it hasn't quite converged yet. This relates to the rate of convergence because both start converging at around 90 time steps.
+  
+3. Change the opening rate (transition from C2 to O) to 0.02 and assign the new values to the transition matrix. Compute the eigenvalues and eigenvectors of the matrix and predict the stationary distribution vector and the rate of convergence to the stationary distribution.
+
+
+```{r}
+trans.matrix <- matrix(c(0.96, 0.04, 0, 0.07, 0.91, 0.02, 0, 0.02, 0.98), nrow=3)
+test <- eigen(trans.matrix)
+print(test$values)
+print(test$vectors)
+eigen1 <- test$vectors[,1]/sum(test$vectors[,1])
+print(eigen1)
+eigen2 <- test$vectors[,2]/test$vectors[1,2]
+print(eigen2)
+eigen3 <- test$vectors[,3]/test$vectors[2,3]
+print(eigen3)
+```
+
+The stationary distribution vector is "eigen1", which has the values 0.4666667, 0.2666667, and 0.2666667. The rate of convergence to the stationary distribution is similar to the exponential decay of the second largest eigenvalue, 0.9762348^x, where x is time.
+
+
+4. Repeat the computations in task 2 with the new transition matrix and plot the probability vector over 100 microseconds.  Does the distribution converge to an equilibrium and if so, over how many time steps (approximately)? Comment on how this relates to the rate of convergence predicted in the previous task.
+
+```{r}
+trans.matrix <- matrix(c(0.96, 0.04, 0, 0.07, 0.91, 0.02, 0, 0.02, 0.98), nrow=3)
+nsteps <- 100
+prob.vec <- matrix(0, nrow=3, ncol=nsteps+1)
+prob.vec[,1] <- c(1,0,0)
+for (i in 1:nsteps) {
+  prob.vec[,i+1] <- trans.matrix %*% prob.vec[,i]
+}
+barplot(prob.vec, xlab="Time", names.arg=0:nsteps, ylab="Probability", cex=1.5, cex.axis=1.5, cex.lab=1.5, col=(c("lightcyan", "lightsalmon", "lavender")))
+x <- 0:nsteps
+lines(x, 0.9762348^x)
+```
+
+This distribution converges to an equilibrium at approvimately 35 time steps. This converges to the stationary distribution faster than the distribution in task 2.
+
+## Part 4: multiple simulations of the three-state ion channel model
+
+1. Use the code to simulate 300 ion channels for 100 microseconds, with all 300 channels initially in state C1, and plot the histograms over time using the sample code above. Describe the behavior of the histogram over time. Does the distribution after 100 microseconds remain the same if you run your script multiple times?
+
+```{r}
+trans2to1 <- 0.07
+trans2to3 <- 0.19
+trans1to2 <- 0.04
+trans3to2 <- 0.02
+nsteps <- 100
+nchannels <- 300
+nstates <- 3
+state.vec <- matrix(1, nrow=nchannels+1, ncol=nsteps+1)
+for (j in 1:nchannels) {
+for (i in 1:nsteps) {
+decider <- runif(1)
+current.state <- state.vec[j,i]
+if (current.state==1) {
+  if (decider < trans1to2){
+    state.vec[j,i+1] <- 2
+  } else {
+    state.vec[j,i+1] <- 1
+  }
+} else if (current.state==2) {
+    if (decider < trans2to1) {
+      state.vec[j,i+1] <- 1
+    } else if (decider < trans2to3) {
+      state.vec[j,i+1] <- 3
+    } else {
+      state.vec[j,i+1] <- 2
+    } 
+  } else if (current.state==3) {
+      if (decider < trans3to2) {
+        state.vec[j,i+1] <- 2
+      } else {
+        state.vec[j,i+1] <- 3
+    }
+}
+}
+}
+
+state.count <- matrix(0,nrow=nstates,ncol=nsteps+1)
+for (k in 1:(nsteps+1)) {
+  state.count[,k] <- tabulate(state.vec[,k],nbins=nstates)
+}
+barplot(state.count,main='frequency of states vs. time',xlab='time', names.arg=1:(nsteps+1),ylab='C1, C2 or O',col=(c("darkslategray1", "darkseagreen1", "plum1")))
+```
+
+According to the histogram, the amount of ion channels in state c1 decreases over time. The distribution converges to around 50 to 75 channels in state c1, 50 channels in state c2, 150 to 175 channels in state O. The histogram looks similar after multiple reruns. The distribution converges.
+
+2. Repeat the last task, but set the initial states of all ion channels to C2. Again, plot the histograms and describe the behavior of the histogram over time.  Does the distribution look the same as in the previous task after 100 microseconds? Has the distribution converged?
+
+```{r}
+trans2to1 <- 0.07
+trans2to3 <- 0.19
+trans1to2 <- 0.04
+trans3to2 <- 0.02
+nsteps <- 100
+nchannels <- 300
+nstates <- 3
+state.vec <- matrix(2, nrow=nchannels+1, ncol=nsteps+1)
+for (j in 1:nchannels) {
+for (i in 1:nsteps) {
+decider <- runif(1)
+current.state <- state.vec[j,i]
+if (current.state==1) {
+  if (decider < trans1to2){
+    state.vec[j,i+1] <- 2
+  } else {
+    state.vec[j,i+1] <- 1
+  }
+} else if (current.state==2) {
+    if (decider < trans2to1) {
+      state.vec[j,i+1] <- 1
+    } else if (decider < trans2to3) {
+      state.vec[j,i+1] <- 3
+    } else {
+      state.vec[j,i+1] <- 2
+    } 
+  } else if (current.state==3) {
+      if (decider < trans3to2) {
+        state.vec[j,i+1] <- 2
+      } else {
+        state.vec[j,i+1] <- 3
+    }
+}
+}
+}
+
+state.count <- matrix(0,nrow=nstates,ncol=nsteps+1)
+for (k in 1:(nsteps+1)) {
+  state.count[,k] <- tabulate(state.vec[,k],nbins=nstates)
+}
+barplot(state.count,main='frequency of states vs. time',xlab='time', names.arg=1:(nsteps+1),ylab='C1, C2 or O',col=(c("darkslategray1", "darkseagreen1", "plum1")))
+```
+
+According to the histogram, the number of channels in state c2 decreases very quickly. Most channels go into state O and the rest go into state c1. The distribution converges so that around 50 to 75 channels are in state c1, 50 channels are in state c2, and 150-175 channels are in state O. The distribution after 100 microseconds is very similar to the distrubition after 100 microseconds in task 1. The distribution converges.
+
+3. Repeat the last task, but set the initial states of all ion channels to O. Again, plot the histograms and describe the behavior of the histogram over time.  Does the distribution look the same as in the previous task after 100 microseconds? Has the distribution converged?
+
+```{r}
+trans2to1 <- 0.07
+trans2to3 <- 0.19
+trans1to2 <- 0.04
+trans3to2 <- 0.02
+nsteps <- 100
+nchannels <- 300
+nstates <- 3
+state.vec <- matrix(3, nrow=nchannels+1, ncol=nsteps+1)
+for (j in 1:nchannels) {
+for (i in 1:nsteps) {
+decider <- runif(1)
+current.state <- state.vec[j,i]
+if (current.state==1) {
+  if (decider < trans1to2){
+    state.vec[j,i+1] <- 2
+  } else {
+    state.vec[j,i+1] <- 1
+  }
+} else if (current.state==2) {
+    if (decider < trans2to1) {
+      state.vec[j,i+1] <- 1
+    } else if (decider < trans2to3) {
+      state.vec[j,i+1] <- 3
+    } else {
+      state.vec[j,i+1] <- 2
+    } 
+  } else if (current.state==3) {
+      if (decider < trans3to2) {
+        state.vec[j,i+1] <- 2
+      } else {
+        state.vec[j,i+1] <- 3
+    }
+}
+}
+}
+
+state.count <- matrix(0,nrow=nstates,ncol=nsteps+1)
+for (k in 1:(nsteps+1)) {
+  state.count[,k] <- tabulate(state.vec[,k],nbins=nstates)
+}
+barplot(state.count,main='frequency of states vs. time',xlab='time', names.arg=1:(nsteps+1),ylab='C1, C2 or O',col=(c("darkslategray1", "darkseagreen1", "plum1")))
+```
+
+According to the histogram, the amount of channels in state O slowly decreases over time. The histogram converges to a distribution with approximately 175-200 channels in state O, 30-50 channels in state c1, and 50-75 channels in state c1. The distribution after 100 microseconds looks fairly similar to the distribution after 100 microseconds in task 2, but there are slightly more channels in state O in this task's ditribution after 100 microseconds. The distribution converges.
+
+4. Change the opening rate (transition from C2 to O) to 0.02 and repeat the computations in task 1 with initial states set to C1. Plot the the resulting histogram over time and describe the behavior of the histogram over time. Does the distribution after 100 microseconds remain the same if you run your script multiple times? Compare the distribution you observe with the distribution in task 1. 
+
+```{r}
+trans2to1 <- 0.07
+trans2to3 <- 0.09
+trans1to2 <- 0.04
+trans3to2 <- 0.02
+nsteps <- 100
+nchannels <- 300
+nstates <- 3
+state.vec <- matrix(1, nrow=nchannels+1, ncol=nsteps+1)
+for (j in 1:nchannels) {
+for (i in 1:nsteps) {
+decider <- runif(1)
+current.state <- state.vec[j,i]
+if (current.state==1) {
+  if (decider < trans1to2){
+    state.vec[j,i+1] <- 2
+  } else {
+    state.vec[j,i+1] <- 1
+  }
+} else if (current.state==2) {
+    if (decider < trans2to1) {
+      state.vec[j,i+1] <- 1
+    } else if (decider < trans2to3) {
+      state.vec[j,i+1] <- 3
+    } else {
+      state.vec[j,i+1] <- 2
+    } 
+  } else if (current.state==3) {
+      if (decider < trans3to2) {
+        state.vec[j,i+1] <- 2
+      } else {
+        state.vec[j,i+1] <- 3
+    }
+}
+}
+}
+
+state.count <- matrix(0,nrow=nstates,ncol=nsteps+1)
+for (k in 1:(nsteps+1)) {
+  state.count[,k] <- tabulate(state.vec[,k],nbins=nstates)
+}
+barplot(state.count,main='frequency of states vs. time',xlab='time', names.arg=1:(nsteps+1),ylab='C1, C2 or O',col=(c("darkslategray1", "darkseagreen1", "plum1")))
+```
+
+According to the histogram, the number of channels in state c1 slowly decreases over time. The rest of the channels are equally in state c2 and state O. There are approximately 150 channels in state c1 and 50 channels in state c2 and 50 channels in state O after 100 microseconds. The distribution generally remains the same after multiple re-runs. The distribution in this task is different from that in task 1 because in this task there are very few channels in state O, whereas in task 1 most of the channels were in state O. The distribution converges.
+
+5. Repeat the last task, but set the initial states of all ion channels to C2. Again, plot the histograms and describe the behavior of the histogram over time.  Does the distribution between look the same as in the previous task after 100 microseconds? Has the distribution converged?
+
+```{r}
+trans2to1 <- 0.07
+trans2to3 <- 0.09
+trans1to2 <- 0.04
+trans3to2 <- 0.02
+nsteps <- 100
+nchannels <- 300
+nstates <- 3
+state.vec <- matrix(2, nrow=nchannels+1, ncol=nsteps+1)
+for (j in 1:nchannels) {
+for (i in 1:nsteps) {
+decider <- runif(1)
+current.state <- state.vec[j,i]
+if (current.state==1) {
+  if (decider < trans1to2){
+    state.vec[j,i+1] <- 2
+  } else {
+    state.vec[j,i+1] <- 1
+  }
+} else if (current.state==2) {
+    if (decider < trans2to1) {
+      state.vec[j,i+1] <- 1
+    } else if (decider < trans2to3) {
+      state.vec[j,i+1] <- 3
+    } else {
+      state.vec[j,i+1] <- 2
+    } 
+  } else if (current.state==3) {
+      if (decider < trans3to2) {
+        state.vec[j,i+1] <- 2
+      } else {
+        state.vec[j,i+1] <- 3
+    }
+}
+}
+}
+
+state.count <- matrix(0,nrow=nstates,ncol=nsteps+1)
+for (k in 1:(nsteps+1)) {
+  state.count[,k] <- tabulate(state.vec[,k],nbins=nstates)
+}
+barplot(state.count,main='frequency of states vs. time',xlab='time', names.arg=1:(nsteps+1),ylab='C1, C2 or O',col=(c("darkslategray1", "darkseagreen1", "plum1")))
+```
+
+According to the histogram, the number of channels in state c2 quickly decreases. The distribution converges to around 150 channels in state c1, 50 channels in state c2, and 50 channels in state O. The distribution after 100 microseconds in this task is similar to the distribution after 100 microseconds in task 4. The distribution converges.
+
+6. Repeat the last task, but set the initial states of all ion channels to O. Again, plot the histograms and describe the behavior of the histogram over time.  Does the distribution between look the same as in the previous task after 100 microseconds? Has the distribution converged?
+
+```{r}
+trans2to1 <- 0.07
+trans2to3 <- 0.09
+trans1to2 <- 0.04
+trans3to2 <- 0.02
+nsteps <- 100
+nchannels <- 300
+nstates <- 3
+state.vec <- matrix(3, nrow=nchannels+1, ncol=nsteps+1)
+for (j in 1:nchannels) {
+for (i in 1:nsteps) {
+decider <- runif(1)
+current.state <- state.vec[j,i]
+if (current.state==1) {
+  if (decider < trans1to2){
+    state.vec[j,i+1] <- 2
+  } else {
+    state.vec[j,i+1] <- 1
+  }
+} else if (current.state==2) {
+    if (decider < trans2to1) {
+      state.vec[j,i+1] <- 1
+    } else if (decider < trans2to3) {
+      state.vec[j,i+1] <- 3
+    } else {
+      state.vec[j,i+1] <- 2
+    } 
+  } else if (current.state==3) {
+      if (decider < trans3to2) {
+        state.vec[j,i+1] <- 2
+      } else {
+        state.vec[j,i+1] <- 3
+    }
+}
+}
+}
+
+state.count <- matrix(0,nrow=nstates,ncol=nsteps+1)
+for (k in 1:(nsteps+1)) {
+  state.count[,k] <- tabulate(state.vec[,k],nbins=nstates)
+}
+barplot(state.count,main='frequency of states vs. time',xlab='time', names.arg=1:(nsteps+1),ylab='C1, C2 or O',col=(c("darkslategray1", "darkseagreen1", "plum1")))
+```
+
+According to the histogram, the number of channels in state O decreases. After 100 microseconds, approximately 1-125 channels are in state c1, 50-75 channels are in state c2, and 75-100 channels are in state O. The distribution after 100 microseconds in this task looks different than the distribution after 100 microseconds in task 5 mainly because in task 5 because in task 5 there are fewer channels in state O. The distribution converges.

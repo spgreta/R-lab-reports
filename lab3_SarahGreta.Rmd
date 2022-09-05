@@ -1,0 +1,156 @@
+#lab 3 report
+
+Sarah Greta
+
+
+## Part 1: Chi-squared test for independence
+
+Data set: number of people in your class who are male vs female, as well as those who prefer clasping their hands with their right thumb of top vs left thumb on top.
+
+Thumb/ sex  |female| male
+------------|------|-----
+right-thumb |  38  |  16
+left-thumb  |  60  |  41
+
+
+Data set: number of people in your class who are right-handed vs left-handed, as well as those who prefer clasping their hands with their right thumb of top vs left thumb on top.
+
+Thumb/ hand |right | left
+------------|------|-----
+right-thumb |  41  |  8
+left-thumb  |  94  |  6   
+
+Data set: number of habitat sightings for two species of two moray eels of genus **Gymnothorax** in a reef in Belize.
+
+Habitat | G. moringa | G. vicinus
+--------|------------|-----------
+Grass   | 127        | 116 
+Sand    | 99         | 67  
+Border  | 264        | 161     
+
+
+1. From the first data set construct a two-way table with sex and thumb-on-top preferences as the two variables and assign it to an R matrix. 
+
+```{r}
+sex.thumb <- matrix(c(38,60,16,41), ncol=2, nrow=2)
+
+```
+
+2. Use the R chi-squared function to calculate the p-value for the data set and decide whether to reject the hypothesis that sex and thumb on top preference are independent at significance levels $\alpha = 0.05, 0.01, 0.001$.
+
+```{r}
+st.test <- chisq.test(sex.thumb)
+print(st.test)
+```
+
+The p-value is 0.2404. For the significance levels of 0.05, 0.01, and 0.001, the null hypothesis would not be rejected.
+
+3. From the second data set construct a two-way table with handedness and thumb-on-top preferences as the two variables and assign it to an R matrix. 
+
+```{r}
+hand.thumb <- matrix(c(41,94,8,6), ncol=2, nrow=2)
+```
+
+4. Use the R chi-squared function to calculate the p-value for the data set and decide whether to reject the hypothesis that handedness and thumb on top preference are independent at significance levels $\alpha = 0.05, 0.01, 0.001$.
+
+```{r}
+ht.test <- chisq.test(hand.thumb)
+print(ht.test)
+```
+
+The p-value is 0.08349. For the significance levels of 0.05, 0.01, and 0.001, the null hypothesis would not be rejected. 
+
+
+5. Put the marine biology data set in the two-way table above into an R matrix.
+
+```{r}
+eels <- matrix(c(127,99,264,116,67,161), ncol=2, nrow=3)
+```
+
+6. Use the R chi-squared function to calculate the p-value for the data set and decide whether to reject the hypothesis that  species and habitat are independent at significance levels $\alpha = 0.05, 0.01, 0.001$.
+
+```{r}
+eel.test <- chisq.test(eels)
+print(eel.test)
+```
+
+The p-value is 0.04367. For the significance levels of 0.05, I would reject the null hypothesis. For the significance levels of 0.01 and 0.001, I would not reject the null hypothesis.
+
+ 
+## Part 2: Generating data for hypothesis testing
+
+1. Use the scripts above to generate data sets for genotype A and genotype B of 50 patients with 0.5 probability of hypertension for both data sets. Plot the histograms of both data sets and report whether they look similar. Place the counts into a data matrix and run a chi-squared test on it. Does the test lead to rejection for the independence hypothesis at 0.1 significance level? How about at 0.05? Based on how you generated the data sets, is the hypothesis actually true? Did the chi-squared test get the result right?
+  
+```{r}
+patients <- 50
+p.genA <- 0.5
+p.genB <- 0.5
+dist.genA <- rbinom(patients, 1, p.genA)
+dist.genB <- rbinom(patients, 1, p.genB)
+hist(dist.genA, main="Hypertension in Genotype A", xlab="Genotype A")
+hist(dist.genB, main="Hypertension in Genotype B", xlab="Genootype B")
+hypertension.data <- matrix(c(table(dist.genA),table(dist.genB)),nrow=2,ncol=2)
+print(chisq.test(hypertension.data))
+
+```
+
+The histograms looks fairly similar, but slightly fewer individuals with Genotype A have hypertension. The test does not lead to rejection of the independence hypothesis at a 0.1 or 0.05 significance level. Based on how I generated the data sets, the independence hypothesis is true. The probability of having hypertension is exactly the same for both genotypes, so there is no connection between which genotype an individual has and having hypertension. The chi-squared got the result right. The p-value is 0.6818, so the independence hypothesis is not rejected.
+
+2. Repeat the code in the first task 100 times by adding a for loop around it. In each loop iteration you generate the two datasets as before (both with probability of hypertension of 0.5), place the counts in a data matrix and perform a chi-squared test for independence of 'genotype' and 'phenotype' (hypertension). Report how many of the 100 chi-squared tests result in rejection of the null hypothesis at the 0.1 and 0.05 significance level by using *test.output$p.value* to put the p-values in a vector *p.vec* and report how many of the p-values are less than the significance level a (the command *sum(p.vec<a)* will do this.) Based on how you generated the datasets, how many of the test conclusions are **wrong** for each significance level? Explain whether this agrees with the notion of p-value.
+
+```{r}
+N <- 100
+p.vec <- rep(NA, N)
+a <- 0.1
+b <- 0.05
+for (i in 1:N) {
+dist.genA <- rbinom(patients, 1, p.genA)
+dist.genB <- rbinom(patients, 1, p.genB)
+hypertension.data <- matrix(c(table(dist.genA),table(dist.genB)),nrow=2,ncol=2)
+test.output <- chisq.test(hypertension.data)
+p.vec[i] <- test.output$p.value
+}
+print(sum(p.vec<a))
+print(sum(p.vec<b))
+```
+
+For a significance level of 0.1, 6 p-values are less than the significance level. Therefore, 6 of the 100 test conclusions are wrong because those 6 reject the null hypothesis that the genotype has no effect on the phenotype when the null hypothesis is actually true. This agrees with the notion of the p-value because a p-value of 0.1 would expect 10 out of 100 tests to falsely reject the null hypothesis. In this case, 6 tests falsely rejected the hypothesis, which is fairly close to 10. For a significance level of 0.05, 2 p-values are less than the significance level. Therefore, 2 of the 100 test conclusions are wrong because those 2 reject the null hypothesis when it is actually true so they result in a false positive. This agrees with the notion of the p-value because a p-value of 0.05 would expect 5 out of 100 tests to falsely reject the null hypothesis. In this case, 2 tests falsely rejected the hypothesis, which is fairly close to 5.
+
+3. Now let us change the two data sets so they are different, and thus the data are not independent. For the first data set (with genotype A), let the probability of hypertension be 0.4 and for the second data set (genotype B) let hypertension occur with probability 0.6. Count how many of the 100 chi-squared tests result in rejecting the null hypothesis at the 0.1 and 0.05 significance level.  Based on how you generated the datasets, how many of the test conclusions are **wrong** for each significance level? Explain whether this agrees with the notion of p-value.
+
+```{r}
+p.genA2 <- 0.4
+p.genB2 <- 0.6
+p.vec2 <- rep(NA,100)
+for (i in 1:N) {
+dist.genA2 <- rbinom(patients, 1, p.genA2)
+dist.genB2 <- rbinom(patients, 1, p.genB2)
+hypertension.data2 <- matrix(c(table(dist.genA2),table(dist.genB2)),nrow=2,ncol=2)
+test.output <- chisq.test(hypertension.data2)
+p.vec2[i] <- test.output$p.value
+}
+print(sum(p.vec2<a))
+print(sum(p.vec2<b))
+
+```
+
+For a significance level of 0.1, 57 test conclusiosn reject the test conclusion, giving a true positive. The p-value, however, measures tests that give a false positive. The p-value would expect 10 out of 100 tests to falsely reject the hypothesis, but in this case falsely rejecting the hypothesis is impossible. Therefore, much more than 10 tests reject the hypothesis because the hypothesis is truly false. This agrees with the p-value because the more than 10 test conclusions reject the hypothesis. Similarly, for a significance level of 0.05, 5 out of 100 test conclusions would be expected to result in a false positive. But 47 test conclusions rejected the hypothesis, which is much greater than 5. So, the data agrees with the p-value because much more than 5 reject the hypothesis because the hypothesis is false.
+
+4. Finally, let's make it really easy for the chi-squared test, and generate data from very different distributions. For the first data set (with genotype A), let the probability of hypertension be 0.2 and for the second data set (genotype B) let hypertension occur with probability 0.8. Count how many of the 100 chi-squared tests result in rejecting the null hypothesis at the 0.1 and 0.05 significance level. Based on how you generated the datasets, how many of the test conclusions are **wrong** for each significance level? Explain whether this agrees with the notion of p-value.
+
+```{r}
+p.genA3 <- 0.2
+p.genB3 <- 0.8
+p.vec3 <- rep(NA,100)
+for (i in 1:N) {
+dist.genA3 <- rbinom(patients, 1, p.genA3)
+dist.genB3 <- rbinom(patients, 1, p.genB3)
+hypertension.data3 <- matrix(c(table(dist.genA3),table(dist.genB3)),nrow=2,ncol=2)
+test.output <- chisq.test(hypertension.data3)
+p.vec3[i] <- test.output$p.value
+}
+print(sum(p.vec3<a))
+print(sum(p.vec3<b))
+```
+
+For both a significance level of 0.1 and 0.05, 100 of the test conclusions reject the hypothesis. Since the hypothesis is true, each test conclusions result in a true positive. Therefore, none of the test conclusions are "wrong." The p-values would expect only 10 and 5 tests to reject the hypothesis, assuming that the hypothesis is true. But since the hypothesis is false, 100 out of the 100 tests reject the the hypothesis, resulting in a true positive. Therefore, the data agrees with the p-value because the hypothesis is false, so it is impossible to falsely reject it. So, 100 tests reject the conclusion even though the p-value would expect 10 and 5 tests to reject the hypothesis.

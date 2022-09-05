@@ -1,0 +1,153 @@
+# Lab 2 report for BIOS 20152
+
+Sarah Greta
+
+## Part 1: confidence interval of a data set of heart rates
+
+To calculate the two boundaries of the 95% confidence interval for a mean value, use the following formula (see chapter 5), where $\mu$ is the mean, $\sigma$ is the standard deviation of the data set, and $n$ is the sample size:
+
+$$ (\mu - 1.96 \sigma/\sqrt{n}, \mu + 1.96 \sigma/\sqrt{n}) $$
+
+
+1. Read in your data set of heart rates. Report its mean, range, and standard deviation. Calculate the 95% confidence interval for the mean heart rate (Z=1.96). Now stand up and walk around the lab and measure your heart rate again. Report the new measurement and whether it is within the confindence interval you computed above.
+  
+```{r}
+sample.size <- 5
+myhr <- read.table("SarahGreta_HR.txt", header=TRUE)
+mean.hr <- mean(myhr$Heartrate)
+print(mean.hr)
+range.hr <- range(myhr$Heartrate)
+print(range.hr)
+sd.hr <- sd(myhr$Heartrate)
+print(sd.hr)
+confint.lower <- (mean.hr - 1.96*(sd.hr/sqrt(5)))
+print(confint.lower)
+confint.upper <- (mean.hr + 1.96*(sd.hr/sqrt(5)))
+print(confint.upper)
+
+```
+
+The mean is 68.4. The range is 67 to 70. The standard deviation is 1.140175. The confidence interval is (67.40059, 69.39941). My new heart rate measurement is 72, which is outside the 95% confidence interval.
+
+2. Download and read in the data file for heart rates for the entire class. Report its mean, range, and standard deviation and plot its histogram. Calculate the 95\% confidence interval for the whole class and report how many of your heart rates are outside of it. Based on the histogram, what fraction of students' heart rates are outside of the confidence interval? Comment on whether it matches the expectation.
+
+```{r}
+sample.size <- 34
+class.hr <- read.table("classhr.txt", header=TRUE)
+mean.hr <- mean(class.hr$Heartrate)
+print(mean.hr)
+range.hr <- range(class.hr$Heartrate)
+print(range.hr)
+sd.hr <- sd(class.hr$Heartrate)
+print(sd.hr)
+hist(class.hr$Heartrate, main="Heart Rates of Class", xlab="Heart rates")
+confint.lower <- (mean.hr - 1.96*(sd.hr/sqrt(34)))
+print(confint.lower)
+confint.upper <- (mean.hr + 1.96*(sd.hr/sqrt(34)))
+print(confint.upper)
+```
+  
+The mean is 76.65882. The range is 54 to 100. The standard deviation is 9.805437. The confidence interval is (73.06873, 79.66068). 28 heart rates were outside the confidence interval, which corresponds to 82% of heart rates. The histogram shows that around 28 heart rates were outside the confidence interval. This histogram matches the expectation.
+
+
+## Part 2: binomial distribution
+
+Suppose that a gene exists in a population in two versions: normal and mutant, and the mutants comprise 5% of the population. Use the binomial random number generator rbinom() to generate the number of mutants in of one or more samples of a specified size, and dbinom() to calculate the probability of different outcomes.
+
+1. Generate a random number of mutants out a sample of 20 people and report it. Suppose you had only this number for estimating the fraction of mutants in the population. How far off would you be from the truth?
+
+```{r}
+sample.size <- 20
+prob.mut <- 0.05
+rbinom(1,sample.size,prob.mut)
+
+```
+  
+Random number generated = 2
+The mutants comprise 5% of the population. In a population of 20 people, only 1 person would be expected to have the mutation. The random number generated was 2, which would suggest that 10% of the population had the mutation. This value is double the probability, so it overshoots the probable mutant population by a large amount.
+
+2. Generate 100 random numbers of mutants from samples of 20 people and report them by plotting a histogram.  How many of those samples have 2 mutants? Calculate the actual probability of having 2 mutants out of 20 and compare it to your observation.
+
+```{r}
+mutations <- rbinom(100,sample.size,prob.mut)
+hist(mutations)
+prob.2mutants <- dbinom(2,sample.size,prob.mut)
+print(prob.2mutants)
+```
+  
+According to the histogram, around 20% of samples had two mutants. The probability of having 2 mutants out of 20 is about 18.86768%. The value calculated through the histogram is slightly higher than the actual probability.
+
+3. Generate 100 random numbers of mutants from samples of 200 people and report them by plotting a histogram. How many of those samples have 20 mutants?  Calculate the actual probability of having 20 mutants out of 200 and compare it to your observation.
+
+```{r}
+sample.size <- 200
+mutations <- rbinom(100,sample.size,prob.mut)
+hist(mutations)
+prob.20mutants <- dbinom(20,sample.size,prob.mut)
+print(prob.20mutants)
+
+```
+  
+According to this histogram, about 2 samples have 20 mutants, which corresponds to 1.0% of samples. The probability of having 20 mutants out of 200 is about 0.15%. The value calculated through the histogram is much higher than the actual probability.
+
+## Part 3: Exploring the central limit theorem
+
+In this project you will explore random sampling using the R random number generators and to observe how much the sample means differ from the true mean. You will generate uniform random numbers between 0 and 1 using the function runif().
+
+1. Generate 100 samples of size 20 and save their mean values to a new vector variable. Report a) the mean value of the 100 sample means; b) the standard deviation of the 100 sample means; c) plot a histogram of the 100 sample means; d) what do you expect to be the mean of the distribution of sample means? how close is your simulated result to the expected value?
+
+
+```{r}
+n <- 100
+sample.size <- 20
+sample.means <- rep(NA, n)
+for (i in 1:n) {
+  sample <- runif(sample.size)
+  sample.means[i] <- mean(sample)
+}
+mean.sm <- mean(sample.means)
+print(mean.sm)
+sd.sm <- sd(sample.means)
+print(sd.sm)
+hist(sample.means, main="Sample Means", xlab="Means")
+```
+  
+The mean value of the 100 sample means is 0.4927926. The standard deviation is 0.05505839. I expect the mean of the distribution of sample means to be around 0.5. The simulated result is very close to that expected value.
+
+2. Generate 100 samples of size 180 and save their mean values to a new vector variable. Report a) the mean value of the 100 sample means; b) the standard deviation of the 100 sample means; c) plot a histogram of the 100 sample means. d) what do you expect to be the mean of the distribution of sample means? how close is your simulated result to the expected value? e) compare the results of this simulation with the results for sample size 20.
+
+
+```{r}
+n <- 100
+sample.size <- 180
+sample.means <- rep(NA, n)
+for (i in 1:n) {
+  sample <- runif(sample.size)
+  sample.means[i] <- mean(sample)
+}
+mean.sm <- mean(sample.means)
+print(mean.sm)
+sd.sm <- sd(sample.means)
+print(sd.sm)
+hist(sample.means, main="Sample Means", xlab="Means")
+```
+  
+The mean value of the 100 sample means is 0.4988291. The standard deviation is 0.01987687. I expect the mean of the distribution of sample means to be around 0.5. The simulated result is very close to that expected value.
+
+3. What is the minimum sample size at which about 90% of random samples have means within 0.05 of the true mean of the uniform random variable between 0 and 1? Try different sample sizes, generate 1000 random samples, plot histograms of their sample means and estimate how many are outside of the desired range.
+
+Since this is a random experiment, you will get different results ever time you run it, so I am only asking for an approximation. Report: a) which sample sizes you tried; b) approximately how many out of 1000 were outside the desired range; c) what is your answer to the question.
+
+
+```{r}
+n <- 1000
+sample.size <- 135
+sample.means <- rep(NA, n)
+for (i in 1:n) {
+  sample <- runif(sample.size)
+  sample.means[i] <- mean(sample)
+}
+hist(sample.means, main = "Sample Means", xlab="Means")
+```
+  
+I tried sample sizes of 100, 120, 130, and 135. When 1000 random samples are generated, around 100 samples were outside the desired range. The minimum sample size at which 90% of random samples have means within 0.05 of the true mean is around 135.

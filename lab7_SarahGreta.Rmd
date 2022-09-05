@@ -1,0 +1,814 @@
+# Template for lab 7 report for BIOS 20152
+
+Sarah Greta
+
+## Programming exercises (self-check, not graded)
+
+1. Write a function that takes the input variable and multiplies it by 1.03 $f(x) = 1.03x$.
+
+```{r}
+mul.fun <- function(x,y) {
+  ans <- y*x
+  return(ans)
+}
+y <- 1.03
+```
+
+2. Use the function to take a variable and multiply it by 1.03, replacing the old value of the variable. If the initial value is 5, the new value should be 5.15.
+
+```{r}
+x <- 5
+x <- mul.fun(x,y)
+print(x)
+```
+
+3. Write a script to take a number and multiply it by 1.03 one hundred times **using a for loop and the function you created**. Starting with the initial value is 5, the script should return the value 96.093.
+
+```{r}
+nsteps <- 100
+x <- 5
+for (i in 1:nsteps) {
+  x <- mul.fun(x,y)
+}
+print(x)
+```
+
+
+4. Modify the script above to save all the intermediate values of the number into a vector, and plot a graph of this vector vs. theiteration step (from 1 to 101).
+
+```{r}
+x <- rep(0, nsteps+1)
+x[1] <- 5
+for (i in 1:nsteps){
+  x[i+1] <- mul.fun(x[i],y)
+}
+print(x)
+time <- 0:nsteps+1
+plot(time,x, t="l")
+```
+  
+## Part 1: Numeric solutions of difference equations
+
+In this part you will calculate numeric solutions of difference equations. Use the code from the last of the exercises above to write a script to iteratively update the variable for a specified number of steps and store it as a vector, and plot it as function of time. Hint: your code will be nearly identical for all the tasks, so once you get the first script to work properly, copy and paste it and modify the updating function. 
+
+For the following difference equations: 1) calculate the numerical solution for 100 steps staring with the given initial values; 2) plot the solution over time; 3) describe how the solution behaves in the long term and whether it depends on the initial value.
+
+1. $$X(t + 1) = 0.9X(t)$$
+Initial values: $X(0) = 100; X(0) = 5$.
+
+```{r}
+fun1 <- function(x,y) {
+  ans <- y*x
+  return(ans)
+}
+nsteps <- 100
+y <- 0.9
+x <- rep(0, nsteps+1)
+x[1] <- 100
+for (i in 1:nsteps){
+  x[i+1] <- fun1(x[i],y)
+}
+time <- 0:nsteps+1
+plot(time, x, t="l")
+x[1] <- 5
+for (i in 1:nsteps){
+  x[i+1] <- fun1(x[i],y)
+}
+plot(time, x, t="l")
+```
+
+For both initial values, the function expontentially decays to 0. However, when the inital value is 5, the function decays from 5 to 0 whereas when the initial value is 100, the function decays from 100 to 0 over the same time frame. So, when the inital value is higher, the function decays more quickly.
+
+2. $$X(t + 1) = 45 - 0.8X(t)$$ 
+Initial values: $X(0) = 20; X(0) = 0$.
+
+
+```{r}
+fun1 <- function(x,m,b) {
+  ans <- m-b*x
+  return(ans)
+}
+m <- 45
+b <- 0.8
+nsteps <- 100
+x <- rep(0, nsteps+1)
+x[1] <- 20
+for (i in 1:nsteps){
+  x[i+1] <- fun1(x[i],m,b)
+}
+time <- 0:nsteps+1
+plot(time, x, t="l")
+x[1] <- 0
+for (i in 1:nsteps){
+  x[i+1] <- fun1(x[i],m,b)
+}
+plot(time, x, t="l")
+```
+
+The function oscillates around 25, but eventually converges in both cases. When the initial value is 20, the function only oscillates between 20 and 28, but when the initial value is 0, the function oscillates between 0 and 45.
+ 
+3. $$X(t + 1) = 0.2X(t)(10 - X(t))$$
+Initial values: $X(0) = 2; X(0) = 9$.
+
+
+```{r}
+fun1 <- function(x,m,b) {
+  ans <- m*x*(b-x)
+  return(ans)
+}
+nsteps <- 100
+m <- 0.2
+b <- 10
+x <- rep(0, nsteps+1)
+x[1] <- 2
+for (i in 1:nsteps){
+  x[i+1] <- fun1(x[i],m,b)
+}
+time <- 0:nsteps+1
+plot(time, x, t="l")
+x[1] <- 9
+for (i in 1:nsteps){
+  x[i+1] <- fun1(x[i],m,b)
+}
+plot(time, x, t="l")
+```
+
+In both cases, the function converges to 5. However, when the initial value is 0, the function exponentially increases until it reaches 5, where it plateaus. When the initial value is 9, the function exponentially decays to 0, then immediately starts exponentially increases to 5, where it plateaus.
+
+## Forward Euler exercises (self-check, not graded)
+
+In this section you will use the Forward Euler method to solve the ODE 
+$$ \frac{dx}{dt} =  0.2 x $$
+Here is an outline of the steps of Euler's method:
+
+* set time step dt, length of time Tmax, number of time steps Nstep
+
+* write a function Upfunk(x,t) that defines the ODE which you want to solve (the function Upfunk(x,t) in dx/dt = Upfunk(x,t))
+
+* initialize the vector of solution values y of length Nstep+1
+
+* set the vector of time values t from 0 to Tmax of length Nstep+1
+
+* set y[1] to the initial value for the ODE 
+
+* for loop with i starting at 1 to Nstep
+
+    + assign y[i+1] to be y[i]+dt*Upfunk(y[i],t[i])
+
+* plot numeric solution y as a function of time t
+
+
+1. Calculate the numeric solution of the ODE for **one time step** using Forward Euler, for time step dt=0.1, starting with initial value x(0) = 5. Answer: 5.1
+
+```{r}
+dt <- 0.1
+Tmax <- 1
+Nstep <- 1
+up.fun <- function(y,t){
+  ans <- m*y
+  return(ans)
+}
+m <- 0.2
+y <- rep(0, Nstep+1)
+t <- dt*(0:Nstep)
+y[1] <- 5
+for (i in 1:Nstep){
+  y[i+1] <- y[i] + dt*up.fun(y[i],t[i])
+}
+plot(t,y)
+```
+
+2. Calculate the error of the numeric solution above by subtracting it from the exact (analytic) solution $x(t) = e^{0.2t}x(0)$, with the same initial value. Answer: about 0.001.
+
+```{r}
+exact.fun <- function(m,t,b){
+  ans <- exp(m*t)*b
+  return(ans)
+}
+m <- 0.2
+b <- 5
+t <- dt*(0:Nstep)
+s <- exact.fun(m,t,b)
+error <- s[2] - y[2]
+print(error)
+```
+
+3. Write a script to solve the ODE using the Forward Euler method based on the outline above. Set the time step dt=0.1 and report the solution **after 100 time steps**. Answer: 36.22323
+
+```{r}
+dt <- 0.1
+Tmax <- 100
+Nstep <- 100
+up.fun <- function(y,t){
+  ans <- m*y
+  return(ans)
+}
+m <- 0.2
+y <- rep(0, Nstep+1)
+t <- dt*(0:Nstep)
+y[1] <- 5
+for (i in 1:Nstep){
+  y[i+1] <- y[i] + dt*up.fun(y[i],t[i])
+}
+print(y)
+solution3 <- y[101]
+plot(t,y)
+```
+
+4. Change the time step to be dt=0.01 and report the solution **after 1000 time steps**. Answer: 36.87156. 
+
+```{r}
+dt <- 0.01
+Tmax <- 1000
+Nstep <- 1000
+up.fun <- function(y,t){
+  ans <- m*y
+  return(ans)
+}
+m <- 0.2
+y <- rep(0, Nstep+1)
+t <- dt*(0:Nstep)
+y[1] <- 5
+for (i in 1:Nstep){
+  y[i+1] <- y[i] + dt*up.fun(y[i],t[i])
+}
+print(y)
+solution4 <- y[1001]
+plot(t,y)
+```
+
+5. Compute the errors of the two numeric solutions by subtracting them from the values obtained from the analytic solution at the same time. Answers: for dt=0.1 the error is 0.722, for dt=0.01 the error is 0.0737. 
+
+```{r}
+m <- 0.2
+b <- 5
+dt <- 0.1
+Nstep <- 100
+t <- dt*(0:Nstep)
+s <- exact.fun(m,t,b)
+error <- s[101] - solution3
+print(error)
+dt <- 0.01
+Nstep <- 1000
+t <- dt*(0:Nstep)
+s <- exact.fun(m,t,b)
+error <- s[1001] - solution4
+print(error)
+
+```
+
+
+## Error and the time step in Forward Euler solutions
+
+In this part you will solve the linear population model ODE:
+$$ {dN}{dt} = (b- d) N $$
+The model parameters are capita birth and death rates ($b$ and $d$, respectively), which may be expressed in percent population change per year (e.g. $d= 0.12$ is a death rate of 12\% per year). Assume that the initial population is 100,000 individuals, and perform the following tasks:
+
+1. Write a Forward Euler script to solve this ODE for any given values of $b$ and $d$ (they should be inputs into your defining function). Set $b=0.5$ and $d=0.12$, plot the numeric solution, and report whether the solution behaves as you would expect it to, for $Tmax=50$ and $dt=0.1$. Describe the behavior of the solution of the ODE over time.
+
+```{r}
+pop.model <- function(b,d,N) {
+  ans <- (b-d)*N
+  return(ans)
+}
+dt <- 0.1
+Tmax <- 50
+Nstep <- Tmax/dt
+b <- 0.5
+d <- 0.12
+N <- rep(0, Nstep+1)
+N[1] <- 100000
+t <- dt*(0:Nstep)
+for (i in 1:Nstep){
+  N[i+1] <- N[i] + dt*pop.model(b,d,N[i])
+}
+plot(t,N, type="l", xlab="Time", ylab="Population")
+```
+
+The solution to the ODE shows that the population increases very slowly and then around the 40th year, the plot increases extremely quickly. It increases minimally at first and then starts to increase much more quickly. After 50 years, the population is close to 1.25e13 people and the solution to the ODE will continue to increase.
+
+2. Change the birth rate to $b=0.01$ and run the calculation again for the same values of $Tmax$ and $dt$. Plot the solution and compare its behavior to the one in the previous task.
+
+```{r}
+b <- 0.01
+d <- 0.12
+Nstep <- Tmax/dt
+N <- rep(0, Nstep+1)
+N[1] <- 100000
+t <- dt*(0:Nstep)
+for (i in 1:Nstep){
+  N[i+1] <- N[i] + dt*pop.model(b,d,N[i])
+}
+plot(t,N, type="l", xlab="Time", ylab="Population")
+```
+
+The solution in this task is very different than the solution in the first task. In this task, the solution decays almost exponentially to 0 after 50 years. In the other graph, the population started increasing extremely quickly around the 40th year whereas in this graph the population decreases.
+
+3. Calculate the numeric solution of the ODE with different time steps: $dt = 1, 5, 10$. Plot the solutions and repot how they behave for larger values of the time step. What time step would you consider optimal for this problem?
+
+```{r}
+b <- 0.01
+d <- 0.12
+dt <- 1
+Nstep <- Tmax/dt
+N <- rep(0, Nstep+1)
+N[1] <- 100000
+t <- dt*(0:Nstep)
+for (i in 1:Nstep){
+  N[i+1] <- N[i] + dt*pop.model(b,d,N[i])
+}
+plot(t,N, type="l", xlab="Time", ylab="Population")
+dt <- 5
+Nstep <- Tmax/dt
+N <- rep(0, Nstep+1)
+N[1] <- 100000
+t <- dt*(0:Nstep)
+for (i in 1:Nstep){
+  N[i+1] <- N[i] + dt*pop.model(b,d,N[i])
+}
+plot(t,N, type="l", xlab="Time", ylab="Population")
+dt <- 10
+Nstep <- Tmax/dt
+N <- rep(0, Nstep+1)
+N[1] <- 100000
+t <- dt*(0:Nstep)
+for (i in 1:Nstep){
+  N[i+1] <- N[i] + dt*pop.model(b,d,N[i])
+}
+plot(t,N, type="l", xlab="Time", ylab="Population")
+```
+
+When dt=1, the graph decays very similarly to the graph in the previous task, approaching 0 around the 40th year. When dt=5, the graph decays to 0 by around the 30th year, but it does not do so smoothly. The graph decreases at the same slope until the 5th year and then the graph starts decreasing more slowly until it reaches the 10th year, where is starts to decrease more slowly and so on. When dt=10, the graph decays very quickly to 0. The plot decreases linearly until the 10th year, where it reaches a point below 0. Then the plot increaes slowly until the 20th year, where it reaches a point above 0. Then the plot decreases to 0 and plateaus there. Out of these three options for dt, the optimal time step would be 1.
+
+4. Find the analytic solution of the ODE for $b=0.5$ and $d=0.12$. Use your FE code to compute and plot the numerical solution with $dt=0.1$ and the analytic solution on the time interval from 0 to 50 years. Calculate and plot the vector of errors (difference between the analytic and numerical solution) and plot it over time. Describe how the error behaves in this plot.
+
+```{r}
+dt <- 0.1
+b <- 0.5
+d <- 0.12
+Nstep <- Tmax/dt
+N <- rep(0, Nstep+1)
+N[1] <- 100000
+t <- dt*(0:Nstep)
+for (i in 1:Nstep){
+  N[i+1] <- N[i] + dt*pop.model(b,d,N[i])
+}
+plot(t,N, type="l", xlab="Time", ylab="Population")
+analytic.pop.model <- function(b,d,N0,t){
+  ans <- N0*exp((b-d)*t)
+  return(ans)
+}
+analyticN <- analytic.pop.model(b,d,N[1],t)
+error <- analyticN - N
+plot(t, error, type ="l")
+```
+
+The error stays close to 0 until the 43rd year, where it starts to increase very quickly.
+
+5. Compute the average error of the numerical solution as the sum of absolute values of the differences between the analytic solution vector $x$ and the numerical solution vector $y$, divided by the total number of time steps. Keeping the same parameters $b=0.5$, and $d=0.12$, calculate the average error of the numerical solution for five values of the time step: $dt=0.1, 0.05, 0.01, 0.005, 0.001$ and $Tmax=50$. Report by what factor the error changes for each decrease in the time step.
+
+```{r}
+average.error <- function(e,s){
+  ans <- sum(abs(e))/s
+  return(ans)
+}
+b <- 0.5
+d <- 0.12
+average.error(error,Nstep)
+
+dt <- 0.05
+Nstep <- Tmax/dt
+N <- rep(0, Nstep+1)
+N[1] <- 100000
+t <- dt*(0:Nstep)
+for (i in 1:Nstep){
+  N[i+1] <- N[i] + dt*pop.model(b,d,N[i])
+}
+analyticN <- analytic.pop.model(b,d,N[1],t)
+error <- analyticN - N
+average.error(error,Nstep)
+
+dt <- 0.01
+Nstep <- Tmax/dt
+N <- rep(0, Nstep+1)
+N[1] <- 100000
+t <- dt*(0:Nstep)
+for (i in 1:Nstep){
+  N[i+1] <- N[i] + dt*pop.model(b,d,N[i])
+}
+analyticN <- analytic.pop.model(b,d,N[1],t)
+error <- analyticN - N
+average.error(error,Nstep)
+
+dt <- 0.005
+Nstep <- Tmax/dt
+N <- rep(0, Nstep+1)
+N[1] <- 100000
+t <- dt*(0:Nstep)
+for (i in 1:Nstep){
+  N[i+1] <- N[i] + dt*pop.model(b,d,N[i])
+}
+analyticN <- analytic.pop.model(b,d,N[1],t)
+error <- analyticN - N
+average.error(error,Nstep)
+
+dt <- 0.001
+Nstep <- Tmax/dt
+N <- rep(0, Nstep+1)
+N[1] <- 100000
+t <- dt*(0:Nstep)
+for (i in 1:Nstep){
+  N[i+1] <- N[i] + dt*pop.model(b,d,N[i])
+}
+analyticN <- analytic.pop.model(b,d,N[1],t)
+error <- analyticN - N
+average.error(error,Nstep)
+```
+
+When the time step changes from 0.1 to 0.05, the average error decreases by a factor of 1.84323. When the time step changes from 0.05 to 0.01, the average error decreases by a factor of 4.668975. When the time step changes from 0.01 to 0.005, the average error decreases by a factor of 1.982537. When the time step changes from 0.005 to 0.001, the average error decreases by a factor of 4.964876.
+
+6. Change the birth rate to $b=0.01$ and again calculate and plot the numerical solution along with the analytic solution for the same values of $Tmax$ and $dt$. Calculate and plot the vector of errors (difference between the analytic and numerical solution) and plot it over time. Describe how the error behaves in this plot.
+
+```{r}
+b <- 0.01
+d <- 0.12
+dt <- 0.1
+Nstep <- Tmax/dt
+N <- rep(0, Nstep+1)
+N[1] <- 100000
+t <- dt*(0:Nstep)
+for (i in 1:Nstep){
+  N[i+1] <- N[i] + dt*pop.model(b,d,N[i])
+}
+plot(t,N, type="l", xlab="Time", ylab="Population")
+analyticN <- analytic.pop.model(b,d,N[1],t)
+error <- analyticN - N
+plot(t,error,type="l")
+```
+
+In this plot the error increases quickly until it peaks at the 10th year and then starts to slowly decrease.
+
+7. Keeping parameters $b=0.01$ and $d=0.12$, repeat task 5: calculate the average error of the numerical solution for five values of the time step: $dt=0.1, 0.05, 0.01, 0.005, 0.001$ and $Tmax=50$. Report by what factor the error changes for each decrease in the time step.
+
+```{r}
+average.error(error,Nstep)
+
+dt <- 0.05
+Nstep <- Tmax/dt
+N <- rep(0, Nstep+1)
+N[1] <- 100000
+t <- dt*(0:Nstep)
+for (i in 1:Nstep){
+  N[i+1] <- N[i] + dt*pop.model(b,d,N[i])
+}
+analyticN <- analytic.pop.model(b,d,N[1],t)
+error <- analyticN - N
+average.error(error,Nstep)
+
+dt <- 0.01
+Nstep <- Tmax/dt
+N <- rep(0, Nstep+1)
+N[1] <- 100000
+t <- dt*(0:Nstep)
+for (i in 1:Nstep){
+  N[i+1] <- N[i] + dt*pop.model(b,d,N[i])
+}
+analyticN <- analytic.pop.model(b,d,N[1],t)
+error <- analyticN - N
+average.error(error,Nstep)
+
+dt <- 0.005
+Nstep <- Tmax/dt
+N <- rep(0, Nstep+1)
+N[1] <- 100000
+t <- dt*(0:Nstep)
+for (i in 1:Nstep){
+  N[i+1] <- N[i] + dt*pop.model(b,d,N[i])
+}
+analyticN <- analytic.pop.model(b,d,N[1],t)
+error <- analyticN - N
+average.error(error,Nstep)
+
+dt <- 0.001
+Nstep <- Tmax/dt
+N <- rep(0, Nstep+1)
+N[1] <- 100000
+t <- dt*(0:Nstep)
+for (i in 1:Nstep){
+  N[i+1] <- N[i] + dt*pop.model(b,d,N[i])
+}
+analyticN <- analytic.pop.model(b,d,N[1],t)
+error <- analyticN - N
+average.error(error,Nstep)
+```
+
+When the time step changes from 0.1 to 0.05, the average error decreases by a factor of 2.002394. When the time step changes from 0.05 to 0.01, the average error decreases by a factor of 5.004616. When the time step changes from 0.01 to 0.005, the average error decreases by a factor of 2.000231. When the time step changes from 0.005 to 0.001, the average error decreases by a factor of 5.000462.
+
+## Part 3: ODE model of drug concentration 
+
+The following ODE is a model for the rate of change of concentration of acetaminophen (in $\mu$ g/mL), with A representing the acetaminophen concentration, $k$ is the first-order rate constant of elimination, and S(t) is the (possibly time-dependent) rate of administration of the drug.
+$$\frac{dA}{dt} = -kA + S(t)$$
+The elimination half-life of acetaminophen is about 3 hours, which  corresponds to a first-order rate constant of k=-0.23. 
+
+1. Use your Forward Euler script from above with the defining function modified to match the equation above with *S(t)=0*. Calculate the numerical solution for 24 hours, with initial concentration *A(0) = 15* for 24 hours with timestep *dt=0.1*.  Describe how the solution behaves in the long term, try a couple of different initial values and comment on whether it depends on the initial value. Then gradually increase the time step dt and report at what value the numeric solution substantially changes.
+
+```{r}
+acetamin.model <- function(k,a,s) {
+  ans <- -k*a + s
+  return(ans)
+}
+s <- 0
+k <- 0.23
+dt <- 0.1
+Tmax <- 24
+Nstep <- Tmax/dt
+t <- dt*(0:Nstep)
+A <- rep(0, Nstep+1)
+A[1] <- 15
+for (i in 1:Nstep){
+  A[i+1] <- A[i] + dt*acetamin.model(k,A[i],s)
+}
+plot(t,A, type="l")
+
+A <- rep(0, Nstep+1)
+A[1] <- 30
+for (i in 1:Nstep){
+  A[i+1] <- A[i] + dt*acetamin.model(k,A[i],s)
+}
+plot(t,A, type="l")
+
+dt <- 0.5
+Tmax <- 24
+Nstep <- Tmax/dt
+t <- dt*(0:Nstep)
+A <- rep(0, Nstep+1)
+A[1] <- 15
+for (i in 1:Nstep){
+  A[i+1] <- A[i] + dt*acetamin.model(k,A[i],s)
+}
+plot(t,A, type="l")
+
+dt <- 1
+Tmax <- 24
+Nstep <- Tmax/dt
+t <- dt*(0:Nstep)
+A <- rep(0, Nstep+1)
+A[1] <- 15
+for (i in 1:Nstep){
+  A[i+1] <- A[i] + dt*acetamin.model(k,A[i],s)
+}
+plot(t,A, type="l")
+
+dt <- 4
+Tmax <- 24
+Nstep <- Tmax/dt
+t <- dt*(0:Nstep)
+A <- rep(0, Nstep+1)
+A[1] <- 15
+for (i in 1:Nstep){
+  A[i+1] <- A[i] + dt*acetamin.model(k,A[i],s)
+}
+plot(t,A, type="l")
+
+dt <- 8
+Tmax <- 24
+Nstep <- Tmax/dt
+t <- dt*(0:Nstep)
+A <- rep(0, Nstep+1)
+A[1] <- 15
+for (i in 1:Nstep){
+  A[i+1] <- A[i] + dt*acetamin.model(k,A[i],s)
+}
+plot(t,A, type="l")
+
+dt <- 12
+Tmax <- 24
+Nstep <- Tmax/dt
+t <- dt*(0:Nstep)
+A <- rep(0, Nstep+1)
+A[1] <- 15
+for (i in 1:Nstep){
+  A[i+1] <- A[i] + dt*acetamin.model(k,A[i],s)
+}
+plot(t,A, type="l")
+
+dt <- 16
+Tmax <- 24
+Nstep <- Tmax/dt
+t <- dt*(0:Nstep)
+A <- rep(0, Nstep+1)
+A[1] <- 15
+for (i in 1:Nstep){
+  A[i+1] <- A[i] + dt*acetamin.model(k,A[i],s)
+}
+plot(t,A, type="l")
+```
+
+With a dt=0.1 and an initial value of 15, the graph decreases expontentially. Around 24 hours, the graph hits a concentration of 0.05633607. When the inital value is changed to 30, the graph looks exactly the same. The only difference is that the y-axis changes. So around 24 hours, the graph hits a concentration of 0.1126721.
+
+With an initial value of 15 and a dt=0.5, the graph looks extremely similar. Changing dt to 1 and to 4 doesn't change the graph very much either. When dt=8, however, the graph changes so that it decreases linearlly until around the 4th hour and then decreases more slowly until it plateaus around 10 hours. Changing dt to 12 changes the graph so that it decreases linearlly until around the 12th hour and then starts to increase linearlly. When dt=16, the graph decreases linearlly.
+
+The graph substantially changes when dt=8.
+
+2. Suppose that acetaminophen is administered with the constant rate of 5 $\mu$ g/mL/hour. Modify the term S(t) in the defining function to reflect this information and calculate the numerical solution with initial concentration *A(0) = 15* for 24 hours with timestep *dt=0.1*. Describe how the solution behaves in the long term, try a couple of different initial values and comment on whether it depends on the initial value. Again, gradually increase the time step and report at what value the numeric solution substantially changes.
+
+```{r}
+s <- 5
+k <- 0.23
+dt <- 0.1
+Tmax <- 24
+Nstep <- Tmax/dt
+t <- dt*(0:Nstep)
+A <- rep(0, Nstep+1)
+A[1] <- 15
+for (i in 1:Nstep){
+  A[i+1] <- A[i] + dt*acetamin.model(k,A[i],s)
+}
+plot(t,A, type="l")
+
+A[1] <- 30
+for (i in 1:Nstep){
+  A[i+1] <- A[i] + dt*acetamin.model(k,A[i],s)
+}
+plot(t,A, type="l")
+
+dt <- 0.5
+Tmax <- 24
+Nstep <- Tmax/dt
+t <- dt*(0:Nstep)
+A <- rep(0, Nstep+1)
+A[1] <- 15
+for (i in 1:Nstep){
+  A[i+1] <- A[i] + dt*acetamin.model(k,A[i],s)
+}
+plot(t,A, type="l")
+
+dt <- 1
+Tmax <- 24
+Nstep <- Tmax/dt
+t <- dt*(0:Nstep)
+A <- rep(0, Nstep+1)
+A[1] <- 15
+for (i in 1:Nstep){
+  A[i+1] <- A[i] + dt*acetamin.model(k,A[i],s)
+}
+plot(t,A, type="l")
+
+dt <- 4
+Tmax <- 24
+Nstep <- Tmax/dt
+t <- dt*(0:Nstep)
+A <- rep(0, Nstep+1)
+A[1] <- 15
+for (i in 1:Nstep){
+  A[i+1] <- A[i] + dt*acetamin.model(k,A[i],s)
+}
+plot(t,A, type="l")
+
+dt <- 8
+Tmax <- 24
+Nstep <- Tmax/dt
+t <- dt*(0:Nstep)
+A <- rep(0, Nstep+1)
+A[1] <- 15
+for (i in 1:Nstep){
+  A[i+1] <- A[i] + dt*acetamin.model(k,A[i],s)
+}
+plot(t,A, type="l")
+
+dt <- 12
+Tmax <- 24
+Nstep <- Tmax/dt
+t <- dt*(0:Nstep)
+A <- rep(0, Nstep+1)
+A[1] <- 15
+for (i in 1:Nstep){
+  A[i+1] <- A[i] + dt*acetamin.model(k,A[i],s)
+}
+plot(t,A, type="l")
+
+dt <- 16
+Tmax <- 24
+Nstep <- Tmax/dt
+t <- dt*(0:Nstep)
+A <- rep(0, Nstep+1)
+A[1] <- 15
+for (i in 1:Nstep){
+  A[i+1] <- A[i] + dt*acetamin.model(k,A[i],s)
+}
+plot(t,A, type="l")
+```
+
+With an initial value of 15 and a dt of 0.1, the graph increases very quickly until around 22 and then it plateaus around the 15th hour. When the initial value is changed to 30, the graph changes so that it exponentially decreases to around 22.
+
+Changing the dt to 0.5 and 1 changes the graph very little. When dt=4, however, the graph increases linearlly until the 4th hour and then starts to increase more slowly until it plateaus around the 8th hour. When the dt is changed to 8, the graph increases linearlly until the 8th hour and then decreases linearlly until the 16th hour and then increases linearlly. When the dt is 12, the graph increases linearlly until the 13th hour and then decreases linearlly. When the dt is 16, the graph becomes linear.
+
+3. Suppose that acetaminophen is administered with the sinusoidal rate of 4+4*sin(t) $\mu$ g/mL/hour.
+Modify the term S(t) in the defining function to reflect this information and calculate the numerical solution with initial concentration *A(0) = 15* for 48 hours with timestep *dt=0.1*. Describe how the solution behaves in the long term, try a couple of different initial values and comment on whether it depends on the initial value. Again, gradually increase the time step and report at what value the numeric solution substantially changes.
+
+```{r}
+k <- 0.23
+dt <- 0.1
+Tmax <- 48
+Nstep <- Tmax/dt
+t <- dt*(0:Nstep)
+s <- 4+4*sin(t)
+A <- rep(0, Nstep+1)
+A[1] <- 15
+for (i in 1:Nstep){
+  A[i+1] <- A[i] + dt*acetamin.model(k,A[i],s[i])
+}
+plot(t,A, type="l")
+
+A <- rep(0, Nstep+1)
+A[1] <- 30
+for (i in 1:Nstep){
+  A[i+1] <- A[i] + dt*acetamin.model(k,A[i],s[i])
+}
+plot(t,A, type="l")
+
+A <- rep(0, Nstep+1)
+A[1] <- 5
+for (i in 1:Nstep){
+  A[i+1] <- A[i] + dt*acetamin.model(k,A[i],s[i])
+}
+plot(t,A, type="l")
+
+dt <- 1
+Tmax <- 48
+Nstep <- Tmax/dt
+t <- dt*(0:Nstep)
+s <- 4+4*sin(t)
+A <- rep(0, Nstep+1)
+A[1] <- 15
+for (i in 1:Nstep){
+  A[i+1] <- A[i] + dt*acetamin.model(k,A[i],s[i])
+}
+plot(t,A, type="l")
+
+dt <- 3
+Tmax <- 48
+Nstep <- Tmax/dt
+t <- dt*(0:Nstep)
+s <- 4+4*sin(t)
+A <- rep(0, Nstep+1)
+A[1] <- 15
+for (i in 1:Nstep){
+  A[i+1] <- A[i] + dt*acetamin.model(k,A[i],s[i])
+}
+plot(t,A, type="l")
+
+dt <- 4
+Tmax <- 48
+Nstep <- Tmax/dt
+t <- dt*(0:Nstep)
+s <- 4+4*sin(t)
+A <- rep(0, Nstep+1)
+A[1] <- 15
+for (i in 1:Nstep){
+  A[i+1] <- A[i] + dt*acetamin.model(k,A[i],s[i])
+}
+plot(t,A, type="l")
+
+dt <- 6
+Tmax <- 48
+Nstep <- Tmax/dt
+t <- dt*(0:Nstep)
+s <- 4+4*sin(t)
+A <- rep(0, Nstep+1)
+A[1] <- 15
+for (i in 1:Nstep){
+  A[i+1] <- A[i] + dt*acetamin.model(k,A[i],s[i])
+}
+plot(t,A, type="l")
+
+dt <- 7
+Tmax <- 48
+Nstep <- Tmax/dt
+t <- dt*(0:Nstep)
+s <- 4+4*sin(t)
+A <- rep(0, Nstep+1)
+A[1] <- 15
+for (i in 1:Nstep){
+  A[i+1] <- A[i] + dt*acetamin.model(k,A[i],s[i])
+}
+plot(t,A, type="l")
+
+dt <- 9
+Tmax <- 48
+Nstep <- Tmax/dt
+t <- dt*(0:Nstep)
+s <- 4+4*sin(t)
+A <- rep(0, Nstep+1)
+A[1] <- 15
+for (i in 1:Nstep){
+  A[i+1] <- A[i] + dt*acetamin.model(k,A[i],s[i])
+}
+plot(t,A, type="l")
+```
+
+With a dt=0.1 and an initial value of 15, the graph oscillates between 22 and 13. With an initial value of 30, the graph decreases a bit and then increases back to thirty by the third hour. Then the graph decreases to around 17 and starts oscillating between 22 and 13. With an initial value of 5, the graph increases to around 14 and then starts oscillating between 13 and 22.
+
+When dt is changed to 1, the graph changes so that each oscillation becomes sharper and less smooth. The peaks are pointed and the graph tends to increase and decrease linearlly. When dt is changed to 3, the graph has no smooth curves. Each increase and decrease is linear and each peak is pointed. The oscillation also starts to get bigger as more time passes. When dt is changed to 4, the graph looks very different. The oscillation remains but the peaks are no longer consistent. When dt is 6, the graph increases until the 5th hour and then decreases slowly. When dt is 7, the graph increases to one large, wide peak and then decreases. When dt is 10, the graph increases slowly until the 19th hour and then decreases until the 28th hour. Then it increases to a peak at the 37th hour and then decreases.
+
+The graph substantially changes when dt=4.
